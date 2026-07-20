@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+.idea/
+# Local tool permissions — machine-specific, not project configuration.
+.claude/settings.local.json
+
+# Uploaded and generated images. The demo photo is regenerated at startup.
+media/
+
+# The analytics SQLite file.
+data/

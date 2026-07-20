@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.idea/
+.claude/
+
+# Secrets never enter an image.
+.env
+
+# Local state — the container gets its own.
+media/
+data/
+tests/

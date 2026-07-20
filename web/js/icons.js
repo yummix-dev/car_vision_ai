@@ -1,0 +1,26 @@
+// Hand-written inline SVG — the prototype ships no image or icon-font assets.
+const P = {
+  back: '<path d="M15 18l-6-6 6-6"/>',
+  next: '<path d="M9 6l6 6-6 6"/>',
+  cart: '<circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.6 12.4a1.5 1.5 0 0 0 1.5 1.2h8.2a1.5 1.5 0 0 0 1.5-1.2L21 7H6"/>',
+  kebab: '<circle cx="12" cy="5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="19" r="1.4"/>',
+  close: '<path d="M18 6L6 18M6 6l12 12"/>',
+  check: '<path d="M20 6L9 17l-5-5"/>',
+  refresh: '<path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/>',
+  rotate: '<path d="M3 12a9 9 0 1 0 2.6-6.4"/><path d="M3 3v6h6"/>',
+  trash: '<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  warn: '<circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.01"/>',
+  zoom: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2M11 8v6M8 11h6"/>',
+  send: '<path d="M21 3L10.5 13.5M21 3l-6.5 18-4-8-8-4L21 3z"/>',
+  camera: '<path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2.2l1.3-2h7l1.3 2h2.2A1.5 1.5 0 0 1 20 8.5v9A1.5 1.5 0 0 1 18.5 19h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="12.5" r="3.2"/>',
+  gallery: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M21 16l-5-5-6 6"/>',
+  demo: '<path d="M5 4h14v16H5z"/><path d="M10 9l5 3-5 3V9z"/>',
+  save: '<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 20h16"/>',
+  share: '<circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/>',
+};
+
+export function icon(name, size = 18, sw = 1.8) {
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none"
+    stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${P[name] || ""}</svg>`;
+}

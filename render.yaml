@@ -1,0 +1,33 @@
+# Render blueprint. Secrets are marked sync:false — they are typed into the
+# dashboard, never committed.
+services:
+  - type: web
+    name: mycar-vision-ai
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter          # free has no persistent disk; see the note below
+    healthCheckPath: /api/config
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_BOT_USERNAME
+        value: Test_Umid_bot
+      - key: TELEGRAM_APP_NAME
+        value: my_car_vision_ai
+      - key: TELEGRAM_MANAGER_CHAT_ID
+        sync: false
+      - key: TELEGRAM_REQUIRE_INIT_DATA
+        value: "1"
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: AI_PROVIDER
+        value: mock
+      - key: IMAGEGEN_PROVIDER
+        value: mock
+      # Uncomment and set in the dashboard when switching on paid generation.
+      # - key: OPENAI_API_KEY
+      #   sync: false
+    disk:
+      name: state
+      mountPath: /data
+      sizeGB: 1

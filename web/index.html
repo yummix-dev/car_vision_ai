@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MyCar Vision AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@400;500;600;700&family=Saira:wght@300;400;500;600&display=swap" rel="stylesheet">
+<!-- Must load before the app module: tg.js reads window.Telegram at import time.
+     Self-hosted rather than loaded from telegram.org: that domain is not
+     reachable from every network the shop's customers are on (the messenger
+     uses its own protocols and keeps working while its website does not), and
+     a blocking <script> in <head> that never resolves leaves a blank page.
+     Refresh this file when the Bot API version needs raising. -->
+<script src="/js/telegram-web-app.js"></script>
+<link rel="stylesheet" href="/css/tokens.css">
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div class="page">
+  <div class="phone">
+    <div class="statusbar">
+      <span class="clock">9:41</span>
+      <span class="sbright">
+        <span class="bars"><i></i><i></i><i></i><i></i></span>
+        <span class="battery"><b></b></span>
+      </span>
+    </div>
+    <header class="tgheader" id="hdr"></header>
+    <div id="steps"></div>
+    <main class="scr" id="scr"></main>
+    <div class="bar" id="bar"></div>
+    <!-- Full-screen overlays (zoom). A child of .phone, not of the scrolling
+         .scr, so they cover the frame instead of scrolling with the content. -->
+    <div id="overlay"></div>
+  </div>
+</div>
+<script type="module" src="/js/app.js"></script>
+</body>
+</html>
