@@ -26,17 +26,25 @@ from app.services import photos
 
 
 def test_implementations_register_against_their_abc():
+    from app.services.ai.vehicle_openai import OpenAIVehicleRecognizer
+
     assert issubclass(MockVehicleRecognizer, VehicleRecognizer)
     assert issubclass(ClaudeVehicleRecognizer, VehicleRecognizer)
+    assert issubclass(OpenAIVehicleRecognizer, VehicleRecognizer)
     assert issubclass(MockImageGenerator, ImageGenerator)
     assert issubclass(ProviderImageGenerator, ImageGenerator)
 
 
 def test_real_and_mock_share_identical_signatures():
     """A drifting signature would break the one-file swap."""
+    from app.services.ai.vehicle_openai import OpenAIVehicleRecognizer
+
     assert inspect.signature(
         MockVehicleRecognizer.recognize
     ) == inspect.signature(ClaudeVehicleRecognizer.recognize)
+    assert inspect.signature(
+        MockVehicleRecognizer.recognize
+    ) == inspect.signature(OpenAIVehicleRecognizer.recognize)
     assert inspect.signature(
         MockImageGenerator.generate
     ) == inspect.signature(ProviderImageGenerator.generate)

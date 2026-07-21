@@ -24,17 +24,59 @@ import {
   nextCharge,
   refreshBalance,
 } from "../quota.js";
+import { tg } from "../tg.js";
 import { esc, genericPreview, optionGroup, priceBlock, wheelPreview } from "../ui.js";
+import { fmt } from "../money.js";
 
 /** Ask the server for the authoritative price. The client never invents totals. */
 export async function refreshQuote() {
   if (!state.productId) return;
   try {
-    const breakdown = await api.quote(state.productId, selectionList());
+    const breakdown = await api.quote(
+      state.productId,
+      selectionList(),
+      state.selectedServices || []
+    );
     setState({ breakdown });
   } catch (e) {
     console.error("quote failed", e);
   }
+}
+
+/** Load the category's paid services and pre-select the default ones. */
+async function loadServices(categoryId) {
+  try {
+    const services = await api.services(categoryId);
+    setState({
+      services,
+      selectedServices: services.filter((s) => s.default_on).map((s) => s.id),
+    });
+  } catch {
+    setState({ services: [], selectedServices: [] });
+  }
+  refreshQuote();
+}
+
+/** The services section — a toggle per paid service, priced. */
+function serviceSection() {
+  const services = state.services || [];
+  if (!services.length) return "";
+  const rows = services
+    .map((s) => {
+      const on = (state.selectedServices || []).includes(s.id);
+      return `<div class="optrow">
+        <div>
+          <div style="font-size:14px">${esc(s.name)}</div>
+          ${s.price ? `<div class="mut2" style="font-size:12px">+${fmt(s.price)} сум</div>`
+                    : `<div class="mut2" style="font-size:12px">бесплатно</div>`}
+        </div>
+        <button class="sw-track ${on ? "on" : ""}" data-act="toggleService"
+          data-id="${s.id}"><b></b></button>
+      </div>`;
+    })
+    .join("");
+  return `<div class="card" style="padding:2px 14px 12px;margin-top:12px">
+    <div class="micro" style="margin:11px 0 4px">Услуги</div>${rows}</div>`;
 }
 
 export function body() {
@@ -61,6 +103,7 @@ export function body() {
       ${esc(product.material || "")} · для ${esc(carLabelShort())}
     </div>
     <div class="card" style="padding:2px 14px 12px">${groups}</div>
+    ${serviceSection()}
     <div class="card">${priceBlock(state.breakdown)}</div>
     ${balanceChip(cat.label)}
     ${invitedNote()}`;
@@ -74,7 +117,9 @@ export const overlay = () =>
   balanceSheet() + exhaustedSheet() + bonusConfirmSheet() + codeSheet();
 
 export function onEnter() {
-  refreshBalance(currentCategory()?.id);
+  const cat = currentCategory();
+  refreshBalance(cat?.id);
+  loadServices(cat?.id);
 }
 
 export const actions = {
@@ -91,6 +136,16 @@ export const actions = {
     const next = state.selections[g] === "on" ? "off" : "on";
     setState({ selections: { ...state.selections, [g]: next } });
     trackOption(g, next);
+    refreshQuote();
+  },
+
+  toggleService: (_ev, el) => {
+    const id = Number(el.dataset.id);
+    const current = state.selectedServices || [];
+    const next = current.includes(id)
+      ? current.filter((x) => x !== id)
+      : [...current, id];
+    setState({ selectedServices: next });
     refreshQuote();
   },
 
@@ -126,18 +181,15 @@ export const actions = {
                codeInput: "", codeError: "", codeResult: null }),
   closeCode: () => setState({ codeOpen: false, codeResult: null, codeError: "" }),
 
-  submitCode: async () => {
-    const code = (state.codeInput || "").trim();
-    if (!code || state.codeBusy) return;
-    setState({ codeBusy: true, codeError: "" });
-    try {
-      const result = await api.activateCode(code);
-      // The balance moved on the server; re-read rather than guess by how much.
-      await refreshBalance(currentCategory()?.id);
-      setState({ codeBusy: false, codeResult: result });
-    } catch (e) {
-      setState({ codeBusy: false, codeError: e.message });
-    }
+  submitCode: () => activateCode((state.codeInput || "").trim()),
+
+  scanCode: async () => {
+    const scanned = await tg.scanQr("Наведите на QR-код");
+    if (!scanned) return;
+    // The QR may hold the bare code or a URL ending in it; take the last chunk.
+    const code = scanned.trim().split(/[/?=\s]/).filter(Boolean).pop() || "";
+    setState({ codeInput: code.toUpperCase() });
+    activateCode(code);
   },
   cancelBonus: () => setState({ bonusConfirmOpen: false }),
   confirmBonus: () => {
@@ -145,6 +197,19 @@ export const actions = {
     startGeneration();
   },
 };
+
+async function activateCode(code) {
+  if (!code || state.codeBusy) return;
+  setState({ codeBusy: true, codeError: "" });
+  try {
+    const result = await api.activateCode(code);
+    // The balance moved on the server; re-read rather than guess by how much.
+    await refreshBalance(currentCategory()?.id);
+    setState({ codeBusy: false, codeResult: result });
+  } catch (e) {
+    setState({ codeBusy: false, codeError: e.message });
+  }
+}
 
 function startGeneration() {
   setState({

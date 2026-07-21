@@ -17,6 +17,11 @@ from app.services.ai.vehicle_mock import MockVehicleRecognizer
 @lru_cache
 def get_vehicle_recognizer() -> VehicleRecognizer:
     provider = get_settings().ai_provider.lower()
+    if provider == "openai":
+        # Reuses OPENAI_API_KEY — the same vendor as the image seam.
+        from app.services.ai.vehicle_openai import OpenAIVehicleRecognizer
+
+        return OpenAIVehicleRecognizer(get_settings().openai_api_key)
     if provider == "claude":
         # Imported lazily so the app runs without the anthropic SDK configured.
         from app.services.ai.vehicle_claude import ClaudeVehicleRecognizer
@@ -24,7 +29,9 @@ def get_vehicle_recognizer() -> VehicleRecognizer:
         return ClaudeVehicleRecognizer(get_settings().anthropic_api_key)
     if provider == "mock":
         return MockVehicleRecognizer()
-    raise ValueError(f"Unknown AI_PROVIDER: {provider!r} (expected 'mock' or 'claude')")
+    raise ValueError(
+        f"Unknown AI_PROVIDER: {provider!r} (expected 'mock', 'openai' or 'claude')"
+    )
 
 
 @lru_cache

@@ -9,6 +9,7 @@ from app.models.telegram import TelegramUser
 from app.routers.deps import current_user, require_telegram_user, telegram_user
 from app.services import (
     generation_service,
+    notifications,
     photos,
     quota,
     rate_limit,
@@ -72,7 +73,25 @@ async def start_generation(
 
     if reservation is not None:
         quota.attach_job(reservation["id"], state.job_id)
+        _warn_if_running_low(account, category)
     return state
+
+
+def _warn_if_running_low(account: dict, category) -> None:
+    """Tell the user when a category's free tries are nearly or fully spent.
+
+    Fire-and-forget through the bot; if they never granted write access it goes
+    nowhere, which is fine. Reads the balance the reserve just changed rather
+    than guessing what was left.
+    """
+    snap = quota.snapshot(account["id"], category.id)
+    free_left = snap["current"]["free_remaining"] if snap["current"] else 0
+    if free_left == 0:
+        notifications.category_exhausted(
+            account["id"], category.label, snap["bonus_remaining"]
+        )
+    elif free_left == get_settings().low_balance_threshold:
+        notifications.low_balance(account["id"], category.label, free_left)
 
 
 @router.get("/{job_id}")

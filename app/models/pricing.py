@@ -23,3 +23,4 @@ class PriceBreakdown(BaseModel):
 class QuoteRequest(BaseModel):
     product_id: str
     selections: list[Selection] = Field(default_factory=list)
+    service_ids: list[int] = Field(default_factory=list)

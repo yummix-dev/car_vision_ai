@@ -398,6 +398,21 @@ def test_a_manual_decision_is_distinguishable_in_the_ledger(monkeypatch):
 # ── reporting ─────────────────────────────────────────────────
 
 
+def test_chain_lists_both_parties_for_admin():
+    inviter = make_user(1)
+    invited = make_user(2)
+    referrals.attribute(invited, referrals.start_param(inviter["ref_code"]))
+    qualify(invited)
+
+    chain = referrals.chain()
+    assert len(chain) == 1
+    row = chain[0]
+    assert row["inviter_telegram_id"] == 1
+    assert row["invited_telegram_id"] == 2
+    assert row["status"] == referrals.QUALIFIED
+    assert row["reward_issued_at"] is not None
+
+
 def test_stats_report_invited_and_qualified_separately():
     inviter = make_user(1)
     clicked = make_user(10)

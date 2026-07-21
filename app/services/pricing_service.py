@@ -11,10 +11,8 @@ Installation is always bundled — that rule lives here, not in client-droppable
 from app.models.catalog import Catalog, Category, Product
 from app.models.pricing import PriceBreakdown, PriceLine, Selection
 from app.money import fmt
+from app.services import services_repo
 from app.services.catalog_service import get_catalog
-
-INSTALL_LABEL = "Установка"
-INSTALL_NOTE = "включена"
 
 
 class PricingError(ValueError):
@@ -52,6 +50,7 @@ def resolve_selections(
 def quote(
     product_id: str,
     selections: list[Selection],
+    service_ids: list[int] | None = None,
     catalog: Catalog | None = None,
 ) -> PriceBreakdown:
     catalog = catalog or get_catalog()
@@ -92,7 +91,22 @@ def quote(
         )
         total += choice.price_delta
 
-    lines.append(PriceLine(label=INSTALL_LABEL, amount=0, amount_formatted=INSTALL_NOTE))
+    # Paid services (installation, rework, ...). Priced from the DB, validated
+    # against the product's category — a client cannot attach a service that
+    # belongs to another category or an inactive one.
+    try:
+        services = services_repo.resolve(category.id, service_ids or [])
+    except services_repo.ServiceError as exc:
+        raise PricingError(str(exc)) from exc
+    for service in services:
+        lines.append(
+            PriceLine(
+                label=service["name"],
+                amount=service["price"],
+                amount_formatted=fmt(service["price"]),
+            )
+        )
+        total += service["price"]
 
     return PriceBreakdown(
         product_id=product.id,

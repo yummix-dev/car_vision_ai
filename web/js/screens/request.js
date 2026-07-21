@@ -64,6 +64,7 @@ export const actions = {
             group_id,
             choice_id,
           })),
+          service_ids: i.serviceIds || [],
         })),
         contact: state.form,
         car_label: state.carLabel,

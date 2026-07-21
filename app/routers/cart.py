@@ -8,7 +8,7 @@ from app.models.telegram import TelegramUser
 from app.money import fmt
 from app.routers.deps import telegram_user
 from app.services import analytics
-from app.services.pricing_service import INSTALL_LABEL, PricingError, quote
+from app.services.pricing_service import PricingError, quote
 from app.services.telegram import (
     ManagerNotifyError,
     delivery_configured,
@@ -46,13 +46,10 @@ async def create_booking(
     lines: list[str] = []
     try:
         for item in req.cart:
-            breakdown = quote(item.product_id, item.selections)
+            breakdown = quote(item.product_id, item.selections, item.service_ids)
             total += breakdown.total
-            options = ", ".join(
-                line.label
-                for line in breakdown.lines[1:]
-                if line.label != INSTALL_LABEL
-            )
+            # Everything after the base-price line — options and services alike.
+            options = ", ".join(line.label for line in breakdown.lines[1:])
             lines.append(
                 f"{breakdown.product_name}"
                 f"{f' ({options})' if options else ''}"

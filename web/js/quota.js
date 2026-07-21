@@ -6,6 +6,7 @@
 import { api } from "./api.js";
 import { icon } from "./icons.js";
 import { setState, state } from "./state.js";
+import { tg } from "./tg.js";
 import { esc } from "./ui.js";
 
 /** Refresh the balance for a category. Never blocks the screen it is on. */
@@ -158,6 +159,7 @@ export function codeSheet() {
              <button class="cta" data-act="submitCode" style="margin-top:10px"
                      ${state.codeBusy ? "disabled" : ""}>
                ${state.codeBusy ? "Проверяем…" : "Активировать"}</button>
+             ${tg.canScanQr ? `<button class="cta sec" data-act="scanCode" style="margin-top:9px">Сканировать QR-код</button>` : ""}
              <button class="cta sec" data-act="closeCode" style="margin-top:9px">Отмена</button>`
       }
     </div>`;

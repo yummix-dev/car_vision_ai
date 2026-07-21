@@ -96,6 +96,30 @@ export const tg = {
     wa?.setBackgroundColor?.(color);
   },
 
+  // Native QR scanner — no camera library, no CSP exception. 6.4+.
+  canScanQr: Boolean(wa?.showScanQrPopup),
+
+  /** Open the scanner; resolves with the scanned text, or null if cancelled. */
+  scanQr(text) {
+    return new Promise((resolve) => {
+      if (!wa?.showScanQrPopup) return resolve(null);
+      let done = false;
+      try {
+        wa.showScanQrPopup({ text: text || "" }, (result) => {
+          done = true;
+          wa.closeScanQrPopup?.();
+          resolve(result || null);
+          return true; // close the popup
+        });
+        // If the user dismisses without scanning, Telegram fires no callback;
+        // resolve null once the popup is closed by the platform.
+        wa.onEvent?.("scanQrPopupClosed", () => { if (!done) resolve(null); });
+      } catch {
+        resolve(null);
+      }
+    });
+  },
+
   openTelegramLink(url) {
     if (wa?.openTelegramLink) {
       wa.openTelegramLink(url);

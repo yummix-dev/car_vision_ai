@@ -30,6 +30,7 @@ export function body() {
       </div>
       <div class="chips" style="margin:10px 0 0">
         ${i.chips.map((c) => `<span class="tag">${esc(c)}</span>`).join(" ")}
+        ${(i.serviceLines || []).map((s) => `<span class="tag" style="color:var(--blue)">${esc(s)}</span>`).join(" ")}
       </div>
       <div class="row" style="justify-content:space-between;margin-top:11px;padding-top:10px;border-top:1px solid var(--line)">
         <span class="micro">Стоимость</span>
@@ -48,7 +49,6 @@ export function body() {
     <div class="card" style="margin-top:12px">
       <div class="price">
         <div class="pl"><span>Позиций</span><span>${state.cart.length}</span></div>
-        <div class="pl"><span>Установка</span><span>включена</span></div>
         <div class="total"><span class="micro">Итого</span>
           <span class="num">${fmt(cartTotal())} сум</span></div>
       </div>

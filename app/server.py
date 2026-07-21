@@ -19,7 +19,7 @@ from app.routers import (
     referral,
     vehicle,
 )
-from app.services import cleanup
+from app.services import cleanup, services_repo
 from app.services import photos as photo_service
 from app.services.catalog_service import get_catalog
 
@@ -32,6 +32,9 @@ async def lifespan(app: FastAPI):
     # funnel has an image to work with.
     get_catalog()
     photo_service.ensure_demo_photo()
+    # Every category gets a default 'Установка' service (price 0) so the admin
+    # has something to price and the customer sees installation as a line.
+    services_repo.seed_installation()
 
     sweeper = asyncio.create_task(cleanup.run_forever())
     try:

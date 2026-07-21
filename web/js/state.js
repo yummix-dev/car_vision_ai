@@ -32,6 +32,8 @@ export const state = {
   filter: "pop",
   productId: null,
   selections: {}, // groupId -> choiceId
+  services: [], // paid services offered for the current category
+  selectedServices: [], // ids of chosen services
   breakdown: null,
 
   // generation

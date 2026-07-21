@@ -10,6 +10,6 @@ router = APIRouter(prefix="/api/pricing", tags=["pricing"])
 def post_quote(req: QuoteRequest) -> PriceBreakdown:
     """Server-authoritative price. The client may estimate; this is the truth."""
     try:
-        return quote(req.product_id, req.selections)
+        return quote(req.product_id, req.selections, req.service_ids)
     except PricingError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc

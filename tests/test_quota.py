@@ -224,6 +224,33 @@ def _start(client, headers):
     )
 
 
+def test_low_balance_notification_fires_at_the_threshold(monkeypatch):
+    """When a spend drops free tries to the warning threshold, the user is told."""
+    monkeypatch.setattr(get_settings(), "free_tries_per_category", 3)
+    monkeypatch.setattr(get_settings(), "low_balance_threshold", 1)
+    sent = []
+    monkeypatch.setattr(
+        "app.routers.generation.notifications.low_balance",
+        lambda uid, label, left: sent.append(("low", left)),
+    )
+    monkeypatch.setattr(
+        "app.routers.generation.notifications.category_exhausted",
+        lambda uid, label, bonus: sent.append(("exhausted", bonus)),
+    )
+    client = TestClient(create_app())
+    headers = {"X-Telegram-Init-Data": make_init_data()}
+
+    def _gen(key):
+        return _start(client, {**headers, "Idempotency-Key": key})
+
+    _gen("a")  # 3 -> 2, nothing
+    assert sent == []
+    _gen("b")  # 2 -> 1, low-balance warning
+    assert sent == [("low", 1)]
+    _gen("c")  # 1 -> 0, exhausted warning
+    assert sent[-1][0] == "exhausted"
+
+
 def test_generation_is_blocked_once_tries_run_out():
     client = TestClient(create_app())
     headers = {"X-Telegram-Init-Data": make_init_data()}

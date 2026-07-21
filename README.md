@@ -121,6 +121,20 @@ TELEGRAM_REQUIRE_INIT_DATA=0      # 1 in production: unsigned callers get 401
 turns it on. Everything degrades outside Telegram rather than breaking — no
 user prefill, no native back button, no manager button.
 
+## Paid services
+
+Each category has paid services (installation, rework, …) editable in `/admin` at
+runtime. The catalog stays in YAML; only these prices need changing without a
+deploy, so only these live in the database (`app/services/services_repo.py`).
+Installation is no longer a free bundled line — it is a seeded `Установка`
+service at price 0 that the shop prices in the admin.
+
+The customer picks services on the configurator; the total grows. Crucially the
+**same `quote()`** computes it — a service is priced exactly like an option
+delta, validated against the product's category, and the client sends service
+ids, never amounts. `GET /api/catalog/<id>/services` lists a category's active
+services.
+
 ## Analytics
 
 `/admin` (HTTP Basic, `ADMIN_PASSWORD`) shows the funnel: sessions reaching each

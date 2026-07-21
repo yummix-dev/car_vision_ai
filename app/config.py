@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     # Image generation knobs. Quality is the cost dial: at 1024px "low" is a
     # fraction of a cent and "high" is upwards of 20 — "medium" is the preview
     # that is worth showing a customer without paying for a print master.
+    # Vehicle recognition (AI_PROVIDER=openai) reuses the OpenAI key. A vision
+    # chat model, NOT gpt-image-2 — that generates images, it does not read them.
+    vehicle_recognition_model: str = "gpt-4o-mini"
+
     imagegen_model: str = "gpt-image-2"
     imagegen_quality: str = "medium"  # low | medium | high | auto
     imagegen_max_edge: int = 1024

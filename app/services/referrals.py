@@ -317,6 +317,23 @@ def on_first_generation(user_id: int, source_photo_id: str | None) -> dict | Non
 # ── review ────────────────────────────────────────────────────
 
 
+def chain(limit: int = 50) -> list[dict]:
+    """Every referral with both parties' Telegram ids — the admin overview of
+    who brought whom, read-only."""
+    with connect() as conn:
+        rows = conn.execute(
+            "SELECT r.status, r.source_type, r.reward_issued_at,"
+            " iu.telegram_id AS inviter_telegram_id,"
+            " vu.telegram_id AS invited_telegram_id"
+            " FROM referrals r"
+            " JOIN users iu ON iu.id = r.inviter_user_id"
+            " JOIN users vu ON vu.id = r.invited_user_id"
+            " ORDER BY r.id DESC LIMIT ?",
+            (limit,),
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
 def list_frozen(limit: int = 50) -> list[dict]:
     """Referrals held for review, with enough context to actually judge them."""
     with connect() as conn:

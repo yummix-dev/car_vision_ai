@@ -182,6 +182,13 @@ export const actions = {
       })
       .filter(Boolean);
 
+    // Services chosen on the configurator, carried onto the cart line so the
+    // booking recomputes with them and the customer sees what they cover.
+    const serviceIds = [...(state.selectedServices || [])];
+    const serviceLines = (state.services || [])
+      .filter((s) => serviceIds.includes(s.id))
+      .map((s) => s.name);
+
     const item = {
       uid: `${product.id}-${state.cart.length}-${Date.now()}`,
       productId: product.id,
@@ -190,6 +197,8 @@ export const actions = {
       time: product.time,
       total: state.breakdown.total,
       selections: { ...state.selections },
+      serviceIds,
+      serviceLines,
       chips,
       // The render this line was chosen from — the cart showed a blank square
       // where the customer's own result belonged.

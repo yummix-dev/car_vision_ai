@@ -6,6 +6,7 @@ from app.models.pricing import Selection
 class CartItemIn(BaseModel):
     product_id: str
     selections: list[Selection] = Field(default_factory=list)
+    service_ids: list[int] = Field(default_factory=list)
 
 
 class Contact(BaseModel):

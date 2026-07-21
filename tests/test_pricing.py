@@ -47,12 +47,14 @@ def test_bumper_paint_zero_delta_is_not_a_line():
     assert not any("Покраска" in label for label in labels)
 
 
-def test_installation_is_always_bundled():
+def test_no_bundled_free_installation_line():
+    """Installation is no longer a free bundled line — it is a paid service,
+    priced from the DB and only added when selected (see test_services.py)."""
     q = quote("cf1", [])
-    install = q.lines[-1]
-    assert install.label == "Установка"
-    assert install.amount == 0
-    assert install.amount_formatted == "включена"
+    assert not any(line.amount_formatted == "включена" for line in q.lines)
+    # With no services selected, the breakdown is just base + option deltas.
+    assert q.lines[0].label  # base price line
+    assert all(line.amount != 0 for line in q.lines[1:])
 
 
 def test_unknown_product_rejected():

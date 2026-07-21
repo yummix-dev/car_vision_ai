@@ -35,6 +35,9 @@ export const api = {
 
   catalog: () => req("/api/catalog"),
 
+  services: (category_id) =>
+    req(`/api/catalog/${encodeURIComponent(category_id)}/services`),
+
   demoPhoto: () => req("/api/photos/demo"),
 
   rotatePhoto: (photo_id) =>
@@ -83,10 +86,10 @@ export const api = {
       body: JSON.stringify({ make, model, year }),
     }),
 
-  quote: (product_id, selections) =>
+  quote: (product_id, selections, service_ids = []) =>
     req("/api/pricing/quote", {
       method: "POST",
-      body: JSON.stringify({ product_id, selections }),
+      body: JSON.stringify({ product_id, selections, service_ids }),
     }),
 
   balance: (category_id) =>

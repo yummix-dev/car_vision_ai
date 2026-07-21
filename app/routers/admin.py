@@ -16,7 +16,8 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 from app.config import get_settings
 from app.db import connect
-from app.services import analytics, quota, referrals, reward_codes
+from app.money import fmt
+from app.services import analytics, quota, referrals, reward_codes, services_repo
 from app.services.catalog_service import get_catalog
 
 router = APIRouter(tags=["admin"])
@@ -203,6 +204,107 @@ def cancel_code(code_id: int, _: None = Depends(_authorise)):
     return RedirectResponse("/admin", status_code=303)
 
 
+def _services_section() -> str:
+    """Paid services per category — installation, rework and the like — with the
+    prices the customer is charged. This is the money the shop actually makes on
+    top of the parts, so it lives where the shop can change it without a deploy."""
+    catalog = get_catalog()
+    grouped = services_repo.all_grouped()
+
+    blocks = []
+    for cat in catalog.categories:
+        rows = ""
+        for s in grouped.get(cat.id, []):
+            dim = "" if s["active"] else " style='opacity:.5'"
+            rows += f"""<tr{dim}>
+              <td>{_e(s['name'])}</td>
+              <td class='n'>{fmt(s['price'])}</td>
+              <td>{'по умолчанию' if s['default_on'] else '—'}</td>
+              <td>{'активна' if s['active'] else 'выключена'}</td>
+              <td class='n'>
+                <details><summary class='btn'>Изменить</summary>
+                <form method='post' action='/admin/services/{s['id']}' class='row'
+                      style='gap:6px;margin-top:6px'>
+                  <input name='name' value="{_e(s['name'])}" style='flex:1'>
+                  <input name='price' type='number' value='{s['price']}' style='width:110px'>
+                  <label style='font-size:12px'><input type='checkbox' name='default_on'
+                    {'checked' if s['default_on'] else ''}> умолч.</label>
+                  <label style='font-size:12px'><input type='checkbox' name='active'
+                    {'checked' if s['active'] else ''}> активна</label>
+                  <button class='btn ok' type='submit'>Сохранить</button>
+                </form></details>
+              </td></tr>"""
+        table = (
+            f"<table><thead><tr><th>Услуга</th><th class='n'>Цена</th>"
+            f"<th>Предвыбор</th><th>Статус</th><th class='n'></th></tr></thead>"
+            f"<tbody>{rows}</tbody></table>"
+            if rows else "<p class='mut'>Услуг пока нет.</p>"
+        )
+        blocks.append(f"""<div style='margin-bottom:18px'>
+          <div class='mono' style='color:#9aa7b8;margin-bottom:6px'>{_e(cat.label)}</div>
+          {table}
+          <form method='post' action='/admin/services' class='row' style='gap:6px;margin-top:6px'>
+            <input type='hidden' name='category_id' value='{_e(cat.id)}'>
+            <input name='name' placeholder='Новая услуга' style='flex:1'>
+            <input name='price' type='number' placeholder='цена' value='0' style='width:110px'>
+            <button class='btn ok' type='submit'>Добавить</button>
+          </form>
+        </div>""")
+
+    return "<h2>Услуги по категориям</h2>" + "".join(blocks)
+
+
+def _referral_chain_section() -> str:
+    chain = referrals.chain(limit=40)
+    if not chain:
+        return "<h2>Реферальная цепочка</h2><p class='mut'>Пока нет приглашений.</p>"
+    rows = "".join(
+        f"<tr><td class='mono'>{_e(r['inviter_telegram_id'])}</td>"
+        f"<td class='mono'>{_e(r['invited_telegram_id'])}</td>"
+        f"<td>{_e(r['status'])}</td>"
+        f"<td>{_e(r['source_type'])}</td>"
+        f"<td class='n'>{'да' if r['reward_issued_at'] else '—'}</td></tr>"
+        for r in chain
+    )
+    return f"""<h2>Реферальная цепочка</h2>
+<table><thead><tr><th>Пригласил</th><th>Приглашён</th><th>Статус</th>
+<th>Источник</th><th class='n'>Бонус</th></tr></thead><tbody>{rows}</tbody></table>"""
+
+
+@router.post("/admin/services")
+def create_service(
+    category_id: str = Form(...),
+    name: str = Form(...),
+    price: int = Form(default=0),
+    _: None = Depends(_authorise),
+):
+    try:
+        services_repo.create(category_id, name, price)
+    except services_repo.ServiceError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return RedirectResponse("/admin", status_code=303)
+
+
+@router.post("/admin/services/{service_id}")
+def edit_service(
+    service_id: int,
+    name: str = Form(...),
+    price: int = Form(default=0),
+    default_on: bool = Form(default=False),
+    active: bool = Form(default=False),
+    _: None = Depends(_authorise),
+):
+    # Unchecked checkboxes are simply absent from a form POST, so the defaults
+    # above make "unchecked" mean False rather than "unchanged".
+    try:
+        services_repo.update(
+            service_id, name=name, price=price, default_on=default_on, active=active
+        )
+    except services_repo.ServiceError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return RedirectResponse("/admin", status_code=303)
+
+
 @router.post("/admin/users/{telegram_id}/grant")
 def manual_grant(
     telegram_id: int,
@@ -343,9 +445,13 @@ def funnel_page(
 <th class="n">Конверсия</th><th class="n">Отвал</th><th class="barcell"></th></tr></thead>
 <tbody>{''.join(rows)}</tbody></table>
 
-{frozen_section}
+{_services_section()}
 
 {_codes_section()}
+
+{frozen_section}
+
+{_referral_chain_section()}
 
 {top_table("category_id", "Популярные разделы")}
 {top_table("product_id", "Популярные товары")}
