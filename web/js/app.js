@@ -1,5 +1,5 @@
 import { api } from "./api.js";
-import { back, canGoBack, nav, render, restore, setQuiet, setState, state, subscribe } from "./state.js";
+import { back, canGoBack, nav, openScreen, render, restore, setQuiet, setState, state, subscribe } from "./state.js";
 import { tg } from "./tg.js";
 import { appHeader, stepIndicator } from "./ui.js";
 
@@ -70,10 +70,11 @@ subscribe(draw);
 // ── Global actions available on every screen ──────────────────
 const GLOBAL = {
   back: () => back(),
-  openCart: () => nav("cart"),
+  // Utility screens remember where they were opened from, so Back returns there.
+  openCart: () => openScreen("cart", "cartReturn"),
   openReferral: () => {
     setState({ exhaustedOpen: false, balanceOpen: false });
-    nav("referral");
+    openScreen("referral", "referralReturn");
   },
 };
 

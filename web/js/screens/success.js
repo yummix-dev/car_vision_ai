@@ -1,5 +1,5 @@
 import { icon } from "../icons.js";
-import { back, setState, state } from "../state.js";
+import { reset, setState, state } from "../state.js";
 import { tg } from "../tg.js";
 import { esc } from "../ui.js";
 
@@ -29,7 +29,7 @@ const botUsername = () => state.config?.telegram_bot_username || "";
 
 export const bar = () => `
   ${botUsername() ? `<button class="cta" data-act="manager">Написать менеджеру</button>` : ""}
-  <button class="cta ${botUsername() ? "sec" : ""}" data-act="backToResult">Вернуться к результату</button>`;
+  <button class="cta ${botUsername() ? "sec" : ""}" data-act="toHome">На главную</button>`;
 
 export const actions = {
   // Hidden entirely when no bot is configured — a button that opens nothing is
@@ -38,8 +38,14 @@ export const actions = {
     const username = botUsername();
     if (username) tg.openTelegramLink(`https://t.me/${username}`);
   },
-  backToResult: () => {
-    setState({ cart: [], booking: null, form: { name: "", phone: "", telegram: "", date: "", comment: "" } });
-    back();
+  // The booking is done. Clear the finished order and start fresh at home
+  // rather than walking back into a submitted funnel.
+  toHome: () => {
+    setState({
+      cart: [],
+      booking: null,
+      form: { name: "", phone: "", telegram: "", date: "", comment: "" },
+    });
+    reset("home");
   },
 };

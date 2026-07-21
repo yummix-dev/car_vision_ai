@@ -5,7 +5,9 @@ import { track } from "./analytics.js";
 
 export const state = {
   screen: "flow",
-  history: [],
+  // Where cart/referral return to when closed — set as they are opened.
+  cartReturn: null,
+  referralReturn: null,
 
   catalog: null,
   config: null, // public server settings: /api/config
@@ -151,8 +153,35 @@ export function setQuiet(patch) {
   Object.assign(state, patch);
 }
 
+// Where "back" goes from each screen — the logical parent, not the literal path
+// that led here. A free-form stack replayed the whole funnel (result → config →
+// catalog → car → upload → pick → home = seven presses for one render); this
+// keeps back short and predictable.
+//
+// The shopping screens (catalog/config/result) back out to a single anchor
+// rather than stepping back down through setup — changing photo, car or category
+// is done through explicit buttons ("Сменить раздел", "Другой товар"), so
+// replaying those steps one-by-one on Back is just noise. null = terminal.
+const anchor = () => (state.cart.length ? "cart" : "home");
+
+const BACK_TARGET = {
+  flow: () => null,
+  home: () => null,
+  example: () => "home",
+  pick: anchor,
+  upload: () => "pick",
+  car: () => "upload",
+  catalog: anchor,
+  config: () => "catalog",
+  generating: () => "config",
+  result: () => "config",
+  cart: () => state.cartReturn || "home",
+  request: () => "cart",
+  success: () => null, // a submitted booking is done — no way back into it
+  referral: () => state.referralReturn || "home",
+};
+
 export function nav(screen) {
-  state.history.push(state.screen);
   state.screen = screen;
   // Every screen change reports here, so no screen can be forgotten when one is
   // added later.
@@ -160,23 +189,33 @@ export function nav(screen) {
   render();
 }
 
-/** Navigate without leaving a history entry (used when generation auto-advances). */
-export function replace(screen) {
-  state.screen = screen;
-  track("screen_view", { screen });
-  render();
+/** Kept as an alias: with target-based back there is no stack to avoid pushing
+ *  to, but call sites read clearer when an auto-advance says `replace`. */
+export const replace = nav;
+
+/** Open a utility screen that should return to wherever it was opened from. */
+export function openScreen(screen, returnKey) {
+  if (returnKey) state[returnKey] = state.screen;
+  nav(screen);
+}
+
+/** Leave the funnel entirely — a fresh root with nothing behind it. */
+export function reset(screen) {
+  state.cartReturn = null;
+  state.referralReturn = null;
+  nav(screen);
 }
 
 export function back() {
-  if (!state.history.length) return;
-  state.screen = state.history.pop();
+  const target = BACK_TARGET[state.screen]?.();
+  if (!target) return;
   state.analyzing = false;
   state.carEditing = false;
-  render();
+  nav(target);
 }
 
 export function canGoBack() {
-  return state.history.length > 0 && state.screen !== "flow";
+  return Boolean(BACK_TARGET[state.screen]?.());
 }
 
 // ── derived helpers ───────────────────────────────────────────

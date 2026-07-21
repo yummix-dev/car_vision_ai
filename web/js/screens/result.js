@@ -200,7 +200,9 @@ export const actions = {
       product_id: product.id,
       payload: { total: state.breakdown.total },
     });
-    setState({ cart: [...state.cart, item] });
+    // Landed on the cart with the item added; Back from there returns home, not
+    // to the result of an item already in the cart.
+    setState({ cart: [...state.cart, item], cartReturn: "home" });
     nav("cart");
   },
 };
