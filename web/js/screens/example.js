@@ -11,6 +11,8 @@ export function body() {
       key: "exSlider",
       value: state.exSlider,
       height: 230,
+      before: "/img/example/before.jpg",
+      after: "/img/example/after.jpg",
       beforeCap: "[ исходное фото ]",
       afterCap: "[ AI-результат ]",
     })}

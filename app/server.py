@@ -43,6 +43,20 @@ async def lifespan(app: FastAPI):
 def create_app() -> FastAPI:
     app = FastAPI(title="MyCar Vision AI", lifespan=lifespan)
 
+    @app.middleware("http")
+    async def no_store_for_the_spa(request, call_next):
+        """Keep the SPA out of the webview's cache.
+
+        Telegram's webview caches aggressively and does not revalidate: an edit
+        to a stylesheet or a module simply does not arrive, which reads as "the
+        change did nothing". Generated images are exempt — their ids are unique,
+        so they are safe to cache and expensive to refetch.
+        """
+        response = await call_next(request)
+        if not request.url.path.startswith("/media/"):
+            response.headers["Cache-Control"] = "no-store, must-revalidate"
+        return response
+
     app.include_router(config.router)
     app.include_router(catalog.router)
     app.include_router(events.router)

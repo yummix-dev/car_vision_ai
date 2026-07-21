@@ -22,6 +22,8 @@ export function body() {
       key: "homeSlider",
       value: state.homeSlider,
       height: 224,
+      before: "/img/example/before.jpg",
+      after: "/img/example/after.jpg",
       beforeCap: "[ салон · штатный руль ]",
       afterCap: "[ салон · новый руль ]",
     })}

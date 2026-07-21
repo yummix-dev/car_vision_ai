@@ -37,6 +37,11 @@ class Product(BaseModel):
     category: str
     name: str
     base_price: int
+    # Filename under web/img/products/. Shown on the catalog card AND handed to
+    # the image model as a reference, so the customer sees the part the shop
+    # actually stocks rather than the model's idea of one. Optional: without it
+    # the render falls back to a description in words.
+    photo: str | None = None
     material: str | None = None
     tags: list[str] = Field(default_factory=list)
     time: str
@@ -51,6 +56,8 @@ class Product(BaseModel):
 class Category(BaseModel):
     id: str
     label: str
+    # Filename under web/img/categories/, shown on the section card.
+    photo: str | None = None
     noun: str
     noun_cap: str
     # Accusative form, used in "Мы изменим только {acc}".

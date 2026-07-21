@@ -62,10 +62,49 @@ def _validate_references(catalog: Catalog) -> None:
                     )
 
 
+WEB_IMG_DIR = Path(__file__).resolve().parent.parent.parent / "web" / "img"
+PRODUCT_IMAGE_DIR = WEB_IMG_DIR / "products"
+CATEGORY_IMAGE_DIR = WEB_IMG_DIR / "categories"
+
+
+def product_photo_path(product) -> Path | None:
+    """Where a product's reference photo lives, or None if it has none."""
+    if not product.photo:
+        return None
+    return PRODUCT_IMAGE_DIR / product.photo
+
+
+def category_photo_path(category) -> Path | None:
+    if not category.photo:
+        return None
+    return CATEGORY_IMAGE_DIR / category.photo
+
+
+def _validate_photos(catalog: Catalog) -> None:
+    """A named photo that is not on disk fails at startup.
+
+    The alternative is a silent fallback, which would mean the shop believes
+    customers are seeing a real part while the model quietly invents one.
+    """
+    for cat in catalog.categories:
+        path = category_photo_path(cat)
+        if path is not None and not path.is_file():
+            raise CatalogError(
+                f"category {cat.id}: photo {cat.photo!r} not found at {path}"
+            )
+        for product in cat.products:
+            path = product_photo_path(product)
+            if path is not None and not path.is_file():
+                raise CatalogError(
+                    f"product {product.id}: photo {product.photo!r} not found at {path}"
+                )
+
+
 def load_catalog(path: Path = CATALOG_PATH) -> Catalog:
     raw = yaml.safe_load(path.read_text(encoding="utf-8"))
     catalog = Catalog.model_validate(raw)
     _validate_references(catalog)
+    _validate_photos(catalog)
     return catalog
 
 

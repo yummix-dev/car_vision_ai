@@ -7,6 +7,7 @@ import {
   nav,
   replace,
   selectionList,
+  setQuiet,
   setState,
   state,
 } from "../state.js";
@@ -44,12 +45,43 @@ export function body() {
       </div>
     </div>
     <h2 style="margin-top:16px">Создаём визуализацию</h2>
-    <p>${esc(job?.sub || "")}</p>
-    <div class="progress"><b style="width:${pct}%"></b></div>
+    <p data-gen="sub">${esc(job?.sub || "")}</p>
+    <div class="progress"><b data-gen="bar" style="width:${pct}%"></b></div>
     <div class="row" style="justify-content:space-between;margin-top:7px">
-      <span class="micro">Прогресс</span><span class="num">${pct}%</span>
+      <span class="micro">Прогресс</span><span class="num" data-gen="pct">${pct}%</span>
     </div>
-    <ul class="checklist">${steps}</ul>`;
+    <ul class="checklist" data-gen="steps">${steps}</ul>`;
+}
+
+/** Update the moving parts in place, without rebuilding the screen.
+ *
+ * A full re-render every poll (4×/sec) destroyed and recreated the spinner
+ * element, restarting its CSS animation from zero each time — which is the
+ * stutter. Patching the DOM instead lets the spinner and the photo stay put,
+ * and the progress bar's width transition finally plays. */
+export function patch() {
+  const job = state.job;
+  const root = document.getElementById("scr");
+  if (!job || !root) return;
+
+  const pct = job.progress ?? 0;
+  const set = (sel, fn) => {
+    const el = root.querySelector(`[data-gen="${sel}"]`);
+    if (el) fn(el);
+  };
+
+  set("bar", (el) => (el.style.width = `${pct}%`));
+  set("pct", (el) => (el.textContent = `${pct}%`));
+  set("sub", (el) => (el.textContent = job.sub || ""));
+  set("steps", (list) => {
+    const idx = job.step_index ?? 0;
+    [...list.children].forEach((li, i) => {
+      const done = i < idx || job.status === "done";
+      li.className = done ? "done" : i === idx ? "on" : "";
+      const ck = li.querySelector(".ck");
+      if (ck) ck.innerHTML = done ? icon("check", 10, 3) : "";
+    });
+  });
 }
 
 export function bar() {
@@ -74,7 +106,11 @@ export async function onEnter() {
       selectionList(),
       state.generationKey
     );
-    setState({ jobId: job.job_id, job });
+    // setQuiet, not setState: the screen is already drawn with the right steps,
+    // so patch the initial job in place rather than rebuilding and restarting
+    // the spinner.
+    setQuiet({ jobId: job.job_id, job });
+    patch();
     poll();
   } catch (e) {
     // A rejected start (rate limit, bad product) never becomes a job, so the
@@ -97,7 +133,7 @@ async function poll() {
     } catch {
       return;
     }
-    setState({ job });
+
     if (job.status === "done" || job.status === "error") {
       // The server has settled the reservation by now — a failure refunded it,
       // so re-read rather than guessing what was charged.
@@ -107,12 +143,21 @@ async function poll() {
         product_id: state.productId,
       });
     }
+
     if (job.status === "done") {
+      setQuiet({ job }); // result reads state.job; no need to rebuild this screen
       // Replace rather than push, so Back from the result skips this screen.
       await new Promise((r) => setTimeout(r, 350));
       replace("result");
       return;
     }
-    if (job.status === "error") return;
+    if (job.status === "error") {
+      setState({ job }); // a full render here swaps in the error body
+      return;
+    }
+
+    // Still running: patch in place so the spinner never restarts.
+    setQuiet({ job });
+    patch();
   }
 }

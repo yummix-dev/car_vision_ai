@@ -33,25 +33,20 @@ export function ba({ key, value, height = 224, before, after, beforeCap, afterCa
 /** The app header. Pure: everything it varies on is an argument, so it can be
  *  rendered for either environment without booting the app. */
 export function appHeader({ inTelegram, canBack, cartCount }) {
-  // Inside Telegram the client draws its own back button (wired to back() via
-  // tg.onBack), so drawing a second one duplicates the control.
-  const backBtn =
-    !inTelegram && canBack
-      ? `<button class="iconbtn" data-act="back">${icon("back", 20)}</button>`
-      : `<span style="width:8px"></span>`;
-
   const cartBtn = cartCount
     ? `<span class="cartwrap"><button class="iconbtn" data-act="openCart">${icon("cart", 19)}</button>
         <span class="cartbadge">${cartCount}</span></span>`
     : "";
 
-  // Window controls: real inside Telegram (✕ closes the app; ⋮ has no menu to
-  // open, so it is dropped), inert drawing in the browser mockup — spans, not
-  // buttons, so they never pretend to be clickable.
-  const controls = inTelegram
-    ? `<button class="iconbtn mut2" data-act="closeApp">${icon("close", 19)}</button>`
-    : `<span class="iconbtn mut2">${icon("kebab", 19)}</span>
-       <span class="iconbtn mut2">${icon("close", 19)}</span>`;
+  // Inside Telegram the client already draws a header: the app name, a back
+  // button and a close button. Drawing our own underneath it stacked two
+  // headers and two ✕ buttons, and ate a strip of height on a phone. All that
+  // is left is the cart, and only when there is something in it.
+  if (inTelegram) return cartBtn;
+
+  const backBtn = canBack
+    ? `<button class="iconbtn" data-act="back">${icon("back", 20)}</button>`
+    : `<span style="width:8px"></span>`;
 
   return `${backBtn}
     <div>
@@ -60,7 +55,8 @@ export function appHeader({ inTelegram, canBack, cartCount }) {
     </div>
     <span class="hdr-spacer"></span>
     ${cartBtn}
-    ${controls}`;
+    <span class="iconbtn mut2">${icon("kebab", 19)}</span>
+    <span class="iconbtn mut2">${icon("close", 19)}</span>`;
 }
 
 export const stockPill = (stock) =>
@@ -118,12 +114,18 @@ export const genericPreview = (label) => `
     <span class="mono">[ ${esc(label)} ]</span>
   </div>`;
 
+/** The shop's own photo when it has one, the striped placeholder when it does not. */
+const photoStyle = (photo) =>
+  photo
+    ? `background-image:url('/img/products/${esc(photo)}');background-size:cover;background-position:center`
+    : "";
+
 export function productCard(p, { action = "openProduct" } = {}) {
   const tags = p.tags.map((t) => `<span class="tag">${esc(t)}</span>`).join(" ");
   return `
   <div class="card">
-    <div class="ph" style="height:150px;margin:-14px -14px 12px;border-radius:var(--r-lg) var(--r-lg) 0 0;position:relative">
-      <span class="mono">[ ${esc(p.name)} ]</span>
+    <div class="${p.photo ? "" : "ph"}" style="height:150px;margin:-14px -14px 12px;border-radius:var(--r-lg) var(--r-lg) 0 0;position:relative;display:grid;place-items:center;${photoStyle(p.photo)}">
+      ${p.photo ? "" : `<span class="mono">[ ${esc(p.name)} ]</span>`}
       <span style="position:absolute;top:10px;right:10px">${stockPill(p.stock)}</span>
     </div>
     <div class="row" style="align-items:flex-start">
@@ -138,14 +140,23 @@ export function productCard(p, { action = "openProduct" } = {}) {
   </div>`;
 }
 
+// A div, not a <button>. As a button this card fought the layout on four
+// separate counts — it did not inherit text colour, it let the placeholder's
+// negative margin escape upward, it ignored grid stretching, and it aligned on
+// a baseline instead of filling its row. Keyboard activation is restored by the
+// global keydown handler in app.js.
 export const categoryCard = (c) => `
-  <button class="card" style="text-align:left;cursor:pointer" data-act="pickCategory" data-id="${esc(c.id)}">
-    <div class="ph sm" style="height:78px;margin:-14px -14px 11px;border-radius:var(--r-lg) var(--r-lg) 0 0">
-      <span class="mono">[ ${esc(c.label)} ]</span>
+  <div class="card" role="button" tabindex="0" style="text-align:left;cursor:pointer" data-act="pickCategory" data-id="${esc(c.id)}">
+    <div class="${c.photo ? "" : "ph sm"}" style="height:78px;margin:-14px -14px 11px;border-radius:var(--r-lg) var(--r-lg) 0 0;display:grid;place-items:center;${
+      c.photo
+        ? `background:center/cover url('/img/categories/${esc(c.photo)}')`
+        : ""
+    }">
+      ${c.photo ? "" : `<span class="mono">[ ${esc(c.label)} ]</span>`}
     </div>
     <h3>${esc(c.label)}</h3>
     <div class="mut2" style="font-size:12px;margin-top:3px">${esc(c.pick_sub)}</div>
-  </button>`;
+  </div>`;
 
 const STEP_MAP = {
   pick: 0, upload: 1, car: 2, catalog: 3,

@@ -111,22 +111,43 @@ def _jpeg(size: tuple[int, int]) -> bytes:
 
 
 @pytest.mark.parametrize(
-    "width,height,max_edge,expected",
+    "width,height,max_edge",
     [
-        (1024, 1024, 1024, "1024x1024"),   # square passes through
-        (1200, 900, 1024, "1024x768"),     # 4:3 lands exactly on the grid
-        (900, 1200, 1024, "768x1024"),     # portrait mirrors it
-        (4000, 1000, 1024, "1024x352"),    # 4:1 clamps to the 3:1 API limit
+        (1024, 1024, 1024),   # square
+        (1200, 900, 1024),    # 4:3 landscape
+        (900, 1200, 1024),    # portrait
+        (4000, 1000, 1024),   # 4:1, clamps to the 3:1 API limit
+        (3000, 1000, 1024),   # exactly 3:1
+        (1920, 1080, 1024),   # 16:9, the shape a phone shoots in landscape
     ],
 )
-def test_api_size_snaps_to_the_api_grid(width, height, max_edge, expected):
-    """Both edges must be multiples of 16 and the aspect must stay <= 3:1,
-    or the request 400s."""
+def test_api_size_is_always_acceptable_to_the_api(width, height, max_edge):
+    """Every constraint the API enforces, checked together: multiples of 16,
+    aspect within 3:1, no edge over 3840, and — the one that bit us — above the
+    minimum pixel budget, which a wide photo at a 1024 long edge falls under."""
     size = _api_size(width, height, max_edge)
-    assert size == expected
     w, h = (int(v) for v in size.split("x"))
-    assert w % 16 == 0 and h % 16 == 0
-    assert max(w / h, h / w) <= 3.0
+
+    assert w % 16 == 0 and h % 16 == 0, f"{size} is off the 16px grid"
+    assert max(w / h, h / w) <= 3.0, f"{size} exceeds the 3:1 limit"
+    assert max(w, h) <= 3840, f"{size} exceeds the 3840 ceiling"
+    assert w * h >= 800_000, f"{size} is below the minimum pixel budget"
+
+
+def test_a_wide_photo_grows_instead_of_being_rejected():
+    """1024x352 is what the old code produced for a panoramic shot — and the
+    API answers "below the current minimum pixel budget" with a 400."""
+    size = _api_size(4000, 1000, 1024)
+    w, h = (int(v) for v in size.split("x"))
+
+    assert w * h >= 800_000
+    assert max(w, h) > 1024, "the frame had to grow past the requested long edge"
+
+
+def test_the_aspect_ratio_is_preserved_while_growing():
+    size = _api_size(1920, 1080, 1024)
+    w, h = (int(v) for v in size.split("x"))
+    assert abs((w / h) - (1920 / 1080)) < 0.05, f"{size} distorts 16:9"
 
 
 @pytest.mark.asyncio

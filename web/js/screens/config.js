@@ -42,9 +42,13 @@ export function body() {
   const product = currentProduct();
   if (!cat || !product) return `<p>Товар не выбран.</p>`;
 
-  const preview = cat.is_wheel
-    ? wheelPreview(cat, state.selections)
-    : genericPreview(product.name);
+  // A real photo of the part beats the CSS mock-up of one; the wheel preview
+  // stays as the fallback for products the shop has not photographed yet.
+  const preview = product.photo
+    ? `<div style="height:200px;background:center/cover url('/img/products/${esc(product.photo)}')"></div>`
+    : cat.is_wheel
+      ? wheelPreview(cat, state.selections)
+      : genericPreview(product.name);
 
   const groups = cat.option_groups
     .map((g) => optionGroup(g, state.selections))

@@ -71,7 +71,6 @@ subscribe(draw);
 const GLOBAL = {
   back: () => back(),
   openCart: () => nav("cart"),
-  closeApp: () => tg.close(),
   openReferral: () => {
     setState({ exhaustedOpen: false, balanceOpen: false });
     nav("referral");
@@ -84,6 +83,17 @@ document.addEventListener("click", (ev) => {
   const name = el.dataset.act;
   const handler = SCREENS[state.screen]?.actions?.[name] || GLOBAL[name];
   if (handler) handler(ev, el);
+});
+
+// Elements that act as buttons without being one get their keyboard activation
+// back here — a native <button> gives this for free, a div with role=button
+// does not.
+document.addEventListener("keydown", (ev) => {
+  if (ev.key !== "Enter" && ev.key !== " ") return;
+  const el = ev.target.closest?.('[data-act][role="button"]');
+  if (!el) return;
+  ev.preventDefault();
+  el.click();
 });
 
 document.addEventListener("input", (ev) => {

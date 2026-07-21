@@ -11,6 +11,7 @@ ever needs to survive a restart, swap this dict for a store.
 
 import asyncio
 import logging
+import math
 import time
 import uuid
 
@@ -20,16 +21,42 @@ from app.models.generation import (
     JobState,
     JobStatus,
 )
+from app.config import get_settings
 from app.services import notifications, photos, quota, referrals
 from app.services.ai import get_image_generator
 from app.services.catalog_service import get_catalog
 
 log = logging.getLogger(__name__)
 
-# Roughly matches the prototype's 4200ms animation, so the pacing feels the same
-# when the mock finishes near-instantly.
-MIN_DURATION_SECONDS = 4.2
+# The bar never claims 100 until the file is real — it eases toward this ceiling.
+CEILING = 97
+# Minimum fill time, so even the near-instant mock shows a few seconds of motion.
+MIN_DURATION_SECONDS = 3.0
 _TICK = 0.06
+
+
+def _expected_seconds() -> float:
+    """Roughly how long the running provider takes, for pacing the bar.
+
+    The mock finishes almost instantly; the real provider takes tens of seconds.
+    Pacing to the wrong one is the whole bug — the old code raced to 95% in four
+    seconds and then sat frozen for the 20–40s gpt-image-2 actually needs.
+    """
+    settings = get_settings()
+    if settings.imagegen_provider.lower() == "provider":
+        return max(2.0, settings.generation_expected_seconds)
+    return 3.0
+
+
+def _eased_progress(elapsed: float, expected: float) -> int:
+    """Approach CEILING asymptotically over `expected` seconds, never reaching it.
+
+    Because it only approaches the ceiling, the bar keeps inching up even when a
+    generation runs longer than expected — it reads as "still working", never as
+    "frozen". `tau` is picked so progress is ~85% at the expected duration.
+    """
+    tau = expected / 1.9
+    return min(CEILING, int(CEILING * (1 - math.exp(-elapsed / tau))))
 
 _jobs: dict[str, JobState] = {}
 # When each job reached a terminal state, on the monotonic clock. Kept beside
@@ -96,13 +123,14 @@ async def _run(job: GenerationJob, state: JobState) -> None:
     work = asyncio.create_task(generator.generate(job))
 
     elapsed = 0.0
-    # Advance to 95% over the minimum duration; the last 5% waits on real work.
-    # Both conditions must clear: a fast provider still paces the checklist for
-    # the user, and a slow one keeps ticking past the minimum until it finishes.
+    expected = _expected_seconds()
+    # Ease toward the ceiling over the expected duration, and keep going until
+    # the work is actually done. A fast provider still paces the checklist for
+    # the user; a slow one keeps the bar creeping instead of stalling.
     while not work.done() or elapsed < MIN_DURATION_SECONDS:
         await asyncio.sleep(_TICK)
         elapsed += _TICK
-        state.progress = min(95, int(elapsed / MIN_DURATION_SECONDS * 95))
+        state.progress = _eased_progress(elapsed, expected)
         state.step_index = min(len(state.steps) - 1, state.progress * len(state.steps) // 100)
 
     try:

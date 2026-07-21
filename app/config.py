@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     imagegen_quality: str = "medium"  # low | medium | high | auto
     imagegen_max_edge: int = 1024
     imagegen_timeout_seconds: float = 180.0
+    # Roughly how long a real generation takes, used only to pace the progress
+    # bar. Bump it toward 120 when running IMAGEGEN_QUALITY=high, which is slower.
+    generation_expected_seconds: float = 25.0
 
     # Telegram. `require_init_data` off by default so the funnel stays walkable
     # in a plain browser, exactly like the mock AI seams; production sets it to 1

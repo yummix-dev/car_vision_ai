@@ -1,8 +1,12 @@
-/* Design tokens — ported verbatim from the prototype. */
+/* Design tokens — from the prototype, with one deliberate change.
+   --muted2 was #616c7a, which is 3.24:1 on a card: below the 4.5:1 WCAG needs
+   for normal text, and it was carrying the *smallest* type in the app (10.5px
+   micro labels, 12px card subtitles, tags). Raised to 4.83:1 while staying a
+   clear step dimmer than --muted, so the hierarchy survives. */
 :root{
   --bg:#0c0f14; --bg2:#0f131a; --card:#151b23; --card2:#1b222c;
   --line:rgba(255,255,255,.09);
-  --txt:#eef2f7; --muted:#98a2b3; --muted2:#616c7a;
+  --txt:#eef2f7; --muted:#98a2b3; --muted2:#7d8899;
   --blue:#3b82f6; --blueSoft:rgba(59,130,246,.14);
   --green:#22c55e; --greenSoft:rgba(34,197,94,.13);
   --amber:#f59e0b; --red:#ef4444;
