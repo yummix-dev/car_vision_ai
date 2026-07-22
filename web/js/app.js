@@ -1,4 +1,5 @@
 import { api } from "./api.js";
+import { hasLang, t } from "./i18n.js";
 import { back, canGoBack, nav, openScreen, render, restore, setQuiet, setState, state, subscribe } from "./state.js";
 import { tg } from "./tg.js";
 import { appHeader, stepIndicator } from "./ui.js";
@@ -17,10 +18,12 @@ import * as cart from "./screens/cart.js";
 import * as request from "./screens/request.js";
 import * as success from "./screens/success.js";
 import * as referral from "./screens/referral.js";
+import * as lang from "./screens/lang.js";
+import * as gallery from "./screens/gallery.js";
 
 const SCREENS = {
-  flow, home, example, pick, upload, car,
-  catalog, config, generating, result, cart, request, success, referral,
+  lang, flow, home, example, pick, upload, car,
+  catalog, config, generating, result, cart, request, success, referral, gallery,
 };
 
 const $hdr = document.getElementById("hdr");
@@ -165,8 +168,20 @@ document.addEventListener("input", (ev) => {
     setState({ catalog: data, config: cfg });
   } catch (e) {
     $scr.innerHTML = `<div class="note" style="color:var(--red)">
-      Не удалось загрузить каталог: ${e.message}</div>`;
+      ${t("ui.catalog_error", { msg: e.message })}</div>`;
     return;
   }
+
+  // No language chosen yet → the choice screen comes first.
+  if (!hasLang()) state.screen = "lang";
   render();
 })();
+
+// Switching language refetches the catalog so its labels come back localized,
+// then continues where the language screen was headed.
+window.addEventListener("lang-changed", async (ev) => {
+  try {
+    setState({ catalog: await api.catalog() });
+  } catch {}
+  nav(ev.detail.dest);
+});

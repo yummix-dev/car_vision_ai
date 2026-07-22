@@ -1,21 +1,17 @@
 import { track } from "../analytics.js";
 import { api } from "../api.js";
+import { t } from "../i18n.js";
 import { icon } from "../icons.js";
 import { currentCategory, nav, setState, state } from "../state.js";
 import { esc } from "../ui.js";
 
 const SOURCES = [
-  ["camera", "camera", "Сделать фотографию"],
-  ["gallery", "gallery", "Выбрать из галереи"],
-  ["demo", "demo", "Демонстрационное фото"],
+  ["camera", "camera", "upload.src_camera"],
+  ["gallery", "gallery", "upload.src_gallery"],
+  ["demo", "demo", "upload.src_demo"],
 ];
 
-const TIPS = [
-  "Нужная зона должна полностью попадать в кадр",
-  "Держите телефон ровно",
-  "Используйте хорошее освещение",
-  "Не закрывайте объект руками",
-];
+const TIP_KEYS = ["upload.tip1", "upload.tip2", "upload.tip3", "upload.tip4"];
 
 export function body() {
   const cat = currentCategory();
@@ -23,50 +19,50 @@ export function body() {
 
   if (hasPreview) {
     return `
-      <h2>${esc(cat?.shoot_title || "Фото")}</h2>
-      <p>Так AI точнее определит положение и перспективу.</p>
+      <h2>${esc(cat?.shoot_title || "")}</h2>
+      <p>${t("upload.subtitle")}</p>
       <div style="position:relative;height:260px;border-radius:var(--r-lg);overflow:hidden;
         background:#131922 center/cover url('${esc(state.photoUrl)}')">
-        <span class="pill in" style="position:absolute;top:10px;left:10px">${esc(cat?.noun_cap || "Зона")} в кадре</span>
+        <span class="pill in" style="position:absolute;top:10px;left:10px">${esc(cat?.noun_cap || "")} ${t("upload.in_frame")}</span>
       </div>
       <div class="row" style="margin-top:12px">
-        <button class="btn" style="flex:1" data-act="clearPhoto">Заменить</button>
+        <button class="btn" style="flex:1" data-act="clearPhoto">${t("upload.replace")}</button>
         <button class="btn" style="flex:1" data-act="rotate" ${state.rotating ? "disabled" : ""}>
-          ${state.rotating ? "Поворачиваем…" : "Повернуть"}</button>
+          ${state.rotating ? t("upload.rotating") : t("upload.rotate")}</button>
       </div>
       ${state.uploadError ? `<div class="note" style="color:var(--red)">${esc(state.uploadError)}</div>` : ""}`;
   }
 
   const rows = SOURCES.map(
-    ([id, ic, label]) => `
+    ([id, ic, key]) => `
     <button class="card" style="width:100%;text-align:left;cursor:pointer;display:flex;align-items:center;gap:12px"
       data-act="pickSource" data-src="${id}">
       <span style="width:38px;height:38px;border-radius:11px;background:var(--card2);
         display:grid;place-items:center;color:var(--blue);flex:none">${icon(ic, 19)}</span>
-      <span style="flex:1;font-size:14.5px">${label}</span>
+      <span style="flex:1;font-size:14.5px">${t(key)}</span>
       <span class="mut2">${icon("next", 17)}</span>
     </button>`
   ).join("");
 
-  const tips = TIPS.map(
-    (t) => `<div class="row" style="padding:6px 0">
+  const tips = TIP_KEYS.map(
+    (key) => `<div class="row" style="padding:6px 0">
       <span style="color:var(--green);display:grid;place-items:center">${icon("check", 15, 2.4)}</span>
-      <span style="font-size:13px;color:var(--muted)">${t}</span></div>`
+      <span style="font-size:13px;color:var(--muted)">${t(key)}</span></div>`
   ).join("");
 
   return `
-    <h2>${esc(cat?.shoot_title || "Фото")}</h2>
-    <p>Так AI точнее определит положение и перспективу.</p>
+    <h2>${esc(cat?.shoot_title || "")}</h2>
+    <p>${t("upload.subtitle")}</p>
     ${rows}
     ${state.uploadError ? `<div class="note" style="color:var(--red)">${esc(state.uploadError)}</div>` : ""}
     <div class="card" style="margin-top:14px">
-      <div class="micro" style="margin-bottom:6px">Рекомендации к фото</div>${tips}
+      <div class="micro" style="margin-bottom:6px">${t("upload.tips_title")}</div>${tips}
     </div>
     <input type="file" id="filepick" accept="image/*" hidden>`;
 }
 
 export const bar = () => `
-  <button class="cta" data-act="goCar" ${state.photoId ? "" : "disabled"}>Продолжить</button>`;
+  <button class="cta" data-act="goCar" ${state.photoId ? "" : "disabled"}>${t("upload.continue")}</button>`;
 
 export const actions = {
   pickSource: async (_ev, el) => {

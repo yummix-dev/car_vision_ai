@@ -1,3 +1,4 @@
+import { t } from "../i18n.js";
 import { icon } from "../icons.js";
 import { cartTotal, nav, setState, state } from "../state.js";
 import { esc } from "../ui.js";
@@ -6,9 +7,9 @@ import { fmt } from "../money.js";
 export function body() {
   if (!state.cart.length) {
     return `
-      <h2>Ваша сборка</h2>
-      <div class="note">Корзина пуста. Выберите раздел и примерьте товар.</div>
-      <button class="cta dashed" style="margin-top:12px" data-act="addMore">Добавить товар</button>`;
+      <h2>${t("cart.title")}</h2>
+      <div class="note">${t("cart.empty")}</div>
+      <button class="cta dashed" style="margin-top:12px" data-act="addMore">${t("cart.add_first")}</button>`;
   }
 
   const rows = state.cart
@@ -33,31 +34,31 @@ export function body() {
         ${(i.serviceLines || []).map((s) => `<span class="tag" style="color:var(--blue)">${esc(s)}</span>`).join(" ")}
       </div>
       <div class="row" style="justify-content:space-between;margin-top:11px;padding-top:10px;border-top:1px solid var(--line)">
-        <span class="micro">Стоимость</span>
-        <span class="num" style="font-size:18px">${fmt(i.total)} сум</span>
+        <span class="micro">${t("cart.price")}</span>
+        <span class="num" style="font-size:18px">${fmt(i.total)} ${t("ui.currency")}</span>
       </div>
     </div>`
     )
     .join("");
 
   return `
-    <h2>Ваша сборка</h2>
-    <p>${state.cart.length} поз. для ${esc(state.carLabel)}</p>
+    <h2>${t("cart.title")}</h2>
+    <p>${t("cart.positions_for", { n: state.cart.length, car: esc(state.carLabel) })}</p>
     ${rows}
     <button class="cta dashed" style="margin-top:12px" data-act="addMore">
-      ${icon("plus", 16)} Добавить ещё товар</button>
+      ${icon("plus", 16)} ${t("cart.add_more")}</button>
     <div class="card" style="margin-top:12px">
       <div class="price">
-        <div class="pl"><span>Позиций</span><span>${state.cart.length}</span></div>
-        <div class="total"><span class="micro">Итого</span>
-          <span class="num">${fmt(cartTotal())} сум</span></div>
+        <div class="pl"><span>${t("cart.positions")}</span><span>${state.cart.length}</span></div>
+        <div class="total"><span class="micro">${t("cart.total")}</span>
+          <span class="num">${fmt(cartTotal())} ${t("ui.currency")}</span></div>
       </div>
     </div>`;
 }
 
 export const bar = () =>
   state.cart.length
-    ? `<button class="cta" data-act="toRequest">Оформить заявку</button>`
+    ? `<button class="cta" data-act="toRequest">${t("cart.checkout")}</button>`
     : "";
 
 export const actions = {

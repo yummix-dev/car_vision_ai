@@ -3,6 +3,7 @@ import uuid
 
 from fastapi import APIRouter, Depends, Header, HTTPException
 
+from app.i18n import lang_of, t
 from app.models.cart import BookingRequest, BookingResponse
 from app.models.telegram import TelegramUser
 from app.money import fmt
@@ -32,14 +33,16 @@ async def create_booking(
     req: BookingRequest,
     user: TelegramUser | None = Depends(telegram_user),
     x_session_id: str | None = Header(default=None),
+    x_lang: str | None = Header(default=None),
 ) -> BookingResponse:
     """The booking event is recorded here rather than by the client: the server
     knows a booking happened for certain, while a client can navigate away
     before its event queue flushes."""
+    lang = lang_of(x_lang)
     if not req.cart:
-        raise HTTPException(status_code=400, detail="Корзина пуста")
+        raise HTTPException(status_code=400, detail=t("err.cart_empty", lang))
     if not req.contact.phone.strip():
-        raise HTTPException(status_code=400, detail="Укажите номер телефона")
+        raise HTTPException(status_code=400, detail=t("err.need_phone", lang))
 
     # Totals are recomputed here, never trusted from the client.
     total = 0
@@ -78,7 +81,7 @@ async def create_booking(
         except ManagerNotifyError as exc:
             raise HTTPException(
                 status_code=502,
-                detail="Не удалось отправить заявку. Попробуйте ещё раз.",
+                detail=t("err.booking_failed", lang),
             ) from exc
     else:
         log.warning(

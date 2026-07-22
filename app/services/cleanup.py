@@ -9,7 +9,7 @@ import logging
 import time
 
 from app.config import get_settings
-from app.services import analytics, generation_service, photos, quota
+from app.services import analytics, gallery, generation_service, photos, quota
 
 log = logging.getLogger(__name__)
 
@@ -19,14 +19,21 @@ def sweep_media() -> int:
 
     The demo photo is exempt: it is only seeded at startup, so deleting it from
     under a running app breaks the zero-input funnel until the next restart.
+
+    Renders saved to a user's gallery ("Мои примерки") are exempt too — their
+    whole point is to outlive the sweep. A file is kept while its photo id, or
+    the id it derives from ("<id>-after"), belongs to a saved render.
     """
     settings = get_settings()
     cutoff = time.time() - settings.media_ttl_days * 86400
+    protected = gallery.protected_photo_ids()
     removed = 0
     for path in settings.media_path.glob("*.*"):
         if path.stem == photos.DEMO_PHOTO_ID or path.stem.startswith(
             f"{photos.DEMO_PHOTO_ID}-"
         ):
+            continue
+        if _is_protected(path.stem, protected):
             continue
         try:
             if path.stat().st_mtime < cutoff:
@@ -35,6 +42,14 @@ def sweep_media() -> int:
         except OSError:  # a file vanishing under us is not an error
             continue
     return removed
+
+
+def _is_protected(stem: str, protected: set[str]) -> bool:
+    """A file backs a saved render if its stem is a protected id, or a suffixed
+    derivative of one ("<id>-after", "<id>-card")."""
+    if stem in protected:
+        return True
+    return any(stem.startswith(f"{pid}-") for pid in protected)
 
 
 def sweep_jobs() -> int:

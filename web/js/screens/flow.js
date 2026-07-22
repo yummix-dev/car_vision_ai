@@ -1,39 +1,31 @@
+import { t } from "../i18n.js";
 import { nav } from "../state.js";
 
-const NODES = [
-  ["Выберите раздел", "Руль, магнитола, бампер, камера или парктроники."],
-  ["Сфотографируйте зону", "Камера, галерея или демонстрационное фото."],
-  ["AI определяет автомобиль", "Марка, модель и год — с возможностью поправить."],
-  ["Подбираем совместимые товары", "Только то, что подходит вашей машине."],
-  ["Настройте товар", "Цвет кожи, строчка, вставки, подсветка."],
-  ["AI создаёт визуализацию", "Меняем только выбранную зону на вашем фото."],
-  ["Сравните до и после", "Ползунок показывает результат на вашей машине."],
-  ["Оформите заявку", "Менеджер подтвердит совместимость и время установки."],
-];
+const STEP_KEYS = ["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8"];
 
 export function body() {
-  const nodes = NODES.map(
-    ([title, sub], i) => `
+  const nodes = STEP_KEYS.map(
+    (k, i) => `
     <div class="row" style="align-items:flex-start;gap:13px;padding:11px 0">
       <div class="stepdot ${i === 0 ? "on" : ""}" style="margin-top:2px">${i + 1}</div>
       <div style="flex:1">
-        <h3>${title}</h3>
-        <div class="mut" style="font-size:13px;margin-top:3px;line-height:1.4">${sub}</div>
+        <h3>${t(`flow.${k}.t`)}</h3>
+        <div class="mut" style="font-size:13px;margin-top:3px;line-height:1.4">${t(`flow.${k}.d`)}</div>
       </div>
     </div>
-    ${i < NODES.length - 1 ? '<div style="height:1px;background:var(--line);margin-left:33px"></div>' : ""}`
+    ${i < STEP_KEYS.length - 1 ? '<div style="height:1px;background:var(--line);margin-left:33px"></div>' : ""}`
   ).join("");
 
   return `
-    <span class="eyebrow">Как это работает</span>
-    <h1>Путь от фото до апгрейда</h1>
-    <p>Восемь шагов — от снимка салона до заявки на установку.</p>
+    <span class="eyebrow">${t("flow.eyebrow")}</span>
+    <h1>${t("flow.title")}</h1>
+    <p>${t("flow.lede")}</p>
     <div class="card" style="padding:4px 14px">${nodes}</div>
-    <div class="note">Каждую зону автомобиля фотографируйте отдельно — так AI точнее определит перспективу.</div>`;
+    <div class="note">${t("flow.note")}</div>`;
 }
 
 export const bar = () =>
-  `<button class="cta" data-act="start">Начать примерку</button>`;
+  `<button class="cta" data-act="start">${t("flow.start")}</button>`;
 
 export const actions = {
   start: () => nav("home"),

@@ -30,19 +30,31 @@ def _new_ref_code(conn) -> str:
     raise RuntimeError("Could not allocate a unique referral code")
 
 
-def get_or_create(telegram_user: TelegramUser) -> dict:
-    """Resolve the internal user for a validated Telegram identity."""
+def get_or_create(telegram_user: TelegramUser, lang: str | None = None) -> dict:
+    """Resolve the internal user for a validated Telegram identity.
+
+    `lang` (from the X-Lang header) is stored so notifications sent outside a
+    request — a friend qualifying, a code activating — reach the user in the
+    language they chose.
+    """
     with connect(immediate=True) as conn:
         row = conn.execute(
             "SELECT * FROM users WHERE telegram_id=?", (telegram_user.id,)
         ).fetchone()
         if row:
+            if lang and lang in ("ru", "uz") and row["lang"] != lang:
+                conn.execute(
+                    "UPDATE users SET lang=? WHERE id=?", (lang, row["id"])
+                )
+                return dict(conn.execute(
+                    "SELECT * FROM users WHERE id=?", (row["id"],)
+                ).fetchone())
             return dict(row)
 
         now = int(time.time())
         conn.execute(
-            "INSERT INTO users(telegram_id, ref_code, created_at) VALUES(?,?,?)",
-            (telegram_user.id, _new_ref_code(conn), now),
+            "INSERT INTO users(telegram_id, ref_code, lang, created_at) VALUES(?,?,?,?)",
+            (telegram_user.id, _new_ref_code(conn), lang if lang in ("ru", "uz") else "ru", now),
         )
         conn.execute(
             "INSERT INTO user_balances(user_id, bonus_remaining, updated_at) "

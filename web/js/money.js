@@ -4,5 +4,3 @@ const SEP = " ";
 
 export const fmt = (n) =>
   String(Math.round(n || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, SEP);
-
-export const fmtSum = (n) => `${fmt(n)}${SEP}сум`;

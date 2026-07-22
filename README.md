@@ -4,7 +4,8 @@ Telegram-styled mini-app for a car-tuning shop: photograph a zone of your car �
 AI identifies the vehicle → pick and configure an aftermarket part → AI renders a
 before/after on your own photo → cart → installation booking.
 
-FastAPI backend + a no-build vanilla-JS SPA. All UI copy is Russian; prices in сум.
+FastAPI backend + a no-build vanilla-JS SPA. Bilingual — Russian and Uzbek (Latin),
+chosen on first open and switchable from home; prices in сум. See [Languages](#languages).
 
 ## Run
 
@@ -301,12 +302,40 @@ tests/     pricing golden cases, catalog validation, AI-seam contracts
 The SPA is a state machine: `state.screen` plus a `history[]` stack, no router and
 no build step. Events are delegated on `[data-act]` attributes.
 
+## Languages
+
+The app is bilingual: Russian and Uzbek (Latin, Oʻzbek lotin). A first-open
+screen offers the choice; it is remembered in `localStorage` (`mcv_lang`) and
+switchable again from home. There is no build step — strings live keyed in
+`web/js/i18n.js` and screens call `t("key")`.
+
+The **catalog** is localized too. The client sends its language as `X-Lang`, and
+`/api/catalog` returns category names, options, materials, tags and generation
+steps already resolved to that language (`app/services/catalog_service.py`),
+falling back to Russian wherever an Uzbek `*_uz` field in `catalog.yaml` is
+blank — so a half-translated catalog is never broken. Product names and brands
+(AMG Carbon LED) stay untranslated by design. Server-side user strings — booking
+and generation errors, and the bot notifications — live in `app/i18n.py`; the
+user's chosen language is stored (`users.lang`) so notifications sent outside a
+request reach them in the right language. The `/admin` page and the manager's
+booking message stay Russian — they are read by the shop, not the customer.
+
+Admin-entered paid services carry an optional `name_uz`; blank shows the Russian
+name.
+
+> The Uzbek strings were produced by a non-native translator and are flagged in
+> `web/js/i18n.js` and `app/data/catalog.yaml` for proof-reading before launch.
+
+Coverage is guarded by two tests: `tests/test_i18n.py` (the localized catalog,
+services, error strings and stored language) and `tests/test_i18n_client.py`
+(every Russian key has an Uzbek one, and no Uzbek string leaks Cyrillic).
+
 ## Not built yet
 
-A QR scanner for reward codes (they are typed by hand today), and an admin view
-of the whole referral chain. Telegram theme params are
-deliberately not adopted — the app ships its own fixed dark palette, and
-`setColors()` pushes that palette out to the client chrome instead.
+Telegram theme params are deliberately not adopted — the app ships its own fixed
+dark palette, and `setColors()` pushes that palette out to the client chrome
+instead. Online prepayment and a saved gallery of a user's own renders are
+candidate features, not built.
 
 There is no booking store, deliberately: the manager's chat is the system of
 record and a second copy of customers' phone numbers would earn nothing.

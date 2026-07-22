@@ -12,6 +12,7 @@ from app.routers import (
     catalog,
     config,
     events,
+    gallery,
     generation,
     photos,
     pricing,
@@ -73,6 +74,7 @@ def create_app() -> FastAPI:
     app.include_router(vehicle.router)
     app.include_router(pricing.router)
     app.include_router(generation.router)
+    app.include_router(gallery.router)
     app.include_router(cart.router)
 
     settings = get_settings()

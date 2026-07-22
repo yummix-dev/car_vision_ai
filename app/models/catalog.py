@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 class OptionChoice(BaseModel):
     id: str
     label: str
+    label_uz: str | None = None
     price_delta: int = 0
     # Optional swatch colour, used by leather/stitch groups for the live CSS preview.
     hex: str | None = None
@@ -20,6 +21,7 @@ class OptionGroup(BaseModel):
 
     id: str
     label: str
+    label_uz: str | None = None
     type: Literal["segment", "toggle"]
     # For segments: the choice selected by default. For toggles: "on" or "off".
     default: str
@@ -43,8 +45,10 @@ class Product(BaseModel):
     # the render falls back to a description in words.
     photo: str | None = None
     material: str | None = None
+    material_uz: str | None = None
     tags: list[str] = Field(default_factory=list)
     time: str
+    time_uz: str | None = None
     stock: Literal["in", "order"]
     popular: bool = False
     # Filter flags used by the wheels filter row: carbon, has_led, has_paddles.
@@ -56,20 +60,27 @@ class Product(BaseModel):
 class Category(BaseModel):
     id: str
     label: str
+    label_uz: str | None = None
     # Filename under web/img/categories/, shown on the section card.
     photo: str | None = None
     noun: str
     noun_cap: str
+    noun_cap_uz: str | None = None
     # Accusative form, used in "Мы изменим только {acc}".
     acc: str
     title: str
+    title_uz: str | None = None
     sub: str
+    sub_uz: str | None = None
     # Instruction shown on the upload screen for this zone.
     shoot_title: str
+    shoot_title_uz: str | None = None
     # Subtitle on the category card.
     pick_sub: str
+    pick_sub_uz: str | None = None
     is_wheel: bool = False
     gen_steps: list[str]
+    gen_steps_uz: list[str] | None = None
     option_groups: list[OptionGroup] = Field(default_factory=list)
     products: list[Product] = Field(default_factory=list)
 

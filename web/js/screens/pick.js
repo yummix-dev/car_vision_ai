@@ -1,14 +1,15 @@
 import { track } from "../analytics.js";
+import { t } from "../i18n.js";
 import { nav, setState, state } from "../state.js";
 import { categoryCard } from "../ui.js";
 
 export function body() {
   const cards = (state.catalog?.categories || []).map(categoryCard).join("");
   return `
-    <h2>Что примеряем?</h2>
-    <p>Выберите зону автомобиля — для каждой нужна своя фотография.</p>
+    <h2>${t("pick.title")}</h2>
+    <p>${t("pick.lede")}</p>
     <div class="grid2">${cards}</div>
-    <div class="note">Один раздел за раз. После примерки можно вернуться и добавить ещё товар в сборку.</div>`;
+    <div class="note">${t("pick.note")}</div>`;
 }
 
 export const actions = {

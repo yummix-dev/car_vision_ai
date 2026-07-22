@@ -2,9 +2,11 @@
 // No router: `screen` is a string and `history` is a stack.
 
 import { track } from "./analytics.js";
+import { getLang } from "./i18n.js";
 
 export const state = {
   screen: "flow",
+  lang: getLang(), // null until chosen — boot routes to the language screen then
   // Where cart/referral return to when closed — set as they are opened.
   cartReturn: null,
   referralReturn: null,
@@ -76,6 +78,13 @@ export const state = {
   cart: [],
   form: { name: "", phone: "", telegram: "", date: "", comment: "" },
   booking: null,
+
+  // gallery ("Мои примерки") — null until loaded on entry
+  gallery: null,
+  galleryError: "",
+  galleryView: null, // the render open in the full-screen overlay
+  gallerySlider: 50,
+  galleryConfirmDelete: false,
 };
 
 const listeners = new Set();
@@ -181,6 +190,7 @@ const BACK_TARGET = {
   request: () => "cart",
   success: () => null, // a submitted booking is done — no way back into it
   referral: () => state.referralReturn || "home",
+  gallery: () => "home",
 };
 
 export function nav(screen) {

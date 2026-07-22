@@ -1,59 +1,60 @@
 import { api } from "../api.js";
+import { t } from "../i18n.js";
 import { cartTotal, nav, setQuiet, setState, state } from "../state.js";
 import { tg } from "../tg.js";
 import { esc } from "../ui.js";
 import { fmt } from "../money.js";
 
 const FIELDS = [
-  ["name", "Имя", "text", "Как к вам обращаться"],
-  ["phone", "Номер телефона", "tel", "+998 __ ___ __ __"],
-  ["telegram", "Telegram", "text", "@username"],
-  ["date", "Желаемая дата", "text", "например, 24 июля"],
+  ["name", "request.f_name", "text", "request.f_name_ph"],
+  ["phone", "request.f_phone", "tel", "+998 __ ___ __ __"],
+  ["telegram", "request.f_tg", "text", "@username"],
+  ["date", "request.f_date", "text", "request.f_date_ph"],
 ];
 
 export function body() {
   const fields = FIELDS.map(
-    ([key, label, type, ph]) => `
+    ([key, labelKey, type, ph]) => `
     <div class="field">
-      <label class="micro">${label}</label>
-      <input type="${type}" data-field="${key}" placeholder="${esc(ph)}"
+      <label class="micro">${t(labelKey)}</label>
+      <input type="${type}" data-field="${key}" placeholder="${esc(ph.startsWith("request.") ? t(ph) : ph)}"
         value="${esc(state.form[key])}">
     </div>`
   ).join("");
 
   return `
-    <h2>Заявка на установку</h2>
-    <p>Менеджер свяжется с вами, подтвердит совместимость, стоимость и удобное время установки.</p>
+    <h2>${t("request.title")}</h2>
+    <p>${t("request.lede")}</p>
 
     <div class="card" style="margin-bottom:14px">
       <div class="price">
-        <div class="pl"><span>Автомобиль</span><span>${esc(state.carLabel)}</span></div>
-        <div class="pl"><span>Позиций</span><span>${state.cart.length}</span></div>
-        <div class="total"><span class="micro">Итого</span>
-          <span class="num">${fmt(cartTotal())} сум</span></div>
+        <div class="pl"><span>${t("request.car")}</span><span>${esc(state.carLabel)}</span></div>
+        <div class="pl"><span>${t("request.positions")}</span><span>${state.cart.length}</span></div>
+        <div class="total"><span class="micro">${t("request.total")}</span>
+          <span class="num">${fmt(cartTotal())} ${t("ui.currency")}</span></div>
       </div>
     </div>
 
     ${fields}
     <div class="field">
-      <label class="micro">Комментарий</label>
-      <textarea data-field="comment" placeholder="Пожелания к установке">${esc(state.form.comment)}</textarea>
+      <label class="micro">${t("request.f_comment")}</label>
+      <textarea data-field="comment" placeholder="${t("request.f_comment_ph")}">${esc(state.form.comment)}</textarea>
     </div>
     ${state.formError ? `<div class="note" style="color:var(--red)">${esc(state.formError)}</div>` : ""}
     ${
       tg.user
-        ? `<div class="note blue">Имя и Telegram подставлены из вашего профиля — их можно изменить.</div>`
-        : `<div class="note">Откройте приложение в Telegram, чтобы имя и контакт подставились автоматически.</div>`
+        ? `<div class="note blue">${t("request.prefill")}</div>`
+        : `<div class="note">${t("request.prefill_hint")}</div>`
     }`;
 }
 
 export const bar = () =>
-  `<button class="cta" data-act="submit">Отправить заявку</button>`;
+  `<button class="cta" data-act="submit">${t("request.submit")}</button>`;
 
 export const actions = {
   submit: async () => {
     if (!state.form.phone.trim()) {
-      setState({ formError: "Укажите номер телефона" });
+      setState({ formError: t("request.need_phone") });
       return;
     }
     try {

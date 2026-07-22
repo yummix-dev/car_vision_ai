@@ -1,5 +1,6 @@
 import { track } from "../analytics.js";
 import { api } from "../api.js";
+import { t } from "../i18n.js";
 import { nav, setState, state } from "../state.js";
 import { esc } from "../ui.js";
 
@@ -8,8 +9,8 @@ export function body() {
     return `
       <div style="display:grid;place-items:center;gap:16px;padding:70px 0">
         <div class="spinner"></div>
-        <h2 style="text-align:center;margin:0">Определяем автомобиль</h2>
-        <div class="mut" style="text-align:center;font-size:13.5px">Анализируем фотографию…</div>
+        <h2 style="text-align:center;margin:0">${t("car.analyzing_title")}</h2>
+        <div class="mut" style="text-align:center;font-size:13.5px">${t("car.analyzing_sub")}</div>
       </div>`;
   }
 
@@ -26,33 +27,33 @@ export function body() {
           .join("")}</div>
       </div>`;
     return `
-      <h2>Уточните автомобиль</h2>
-      <p>Выберите марку, модель и год — подберём совместимые товары.</p>
+      <h2>${t("car.confirm_title")}</h2>
+      <p>${t("car.confirm_sub")}</p>
       <div class="card" style="padding:2px 14px 12px">
-        ${row("Марка", opts.brands, "brand")}
-        ${row("Модель", opts.models, "model")}
-        ${row("Год выпуска", opts.years, "year")}
+        ${row(t("car.brand"), opts.brands, "brand")}
+        ${row(t("car.model"), opts.models, "model")}
+        ${row(t("car.year"), opts.years, "year")}
       </div>`;
   }
 
   return `
-    <h2>Похоже, это</h2>
+    <h2>${t("car.likely")}</h2>
     <div style="height:200px;border-radius:var(--r-lg);overflow:hidden;margin-bottom:14px;
       background:#131922 center/cover url('${esc(state.photoUrl || "")}')"></div>
     <div class="card">
       <h3 style="font-size:22px">${esc(state.carLabel)}</h3>
-      <div style="margin-top:10px"><span class="pill in">Совместимые товары найдены</span></div>
+      <div style="margin-top:10px"><span class="pill in">${t("car.compatible_found")}</span></div>
     </div>
-    <div class="note">Если модель определена неверно — поправьте вручную, каталог обновится.</div>`;
+    <div class="note">${t("car.wrong_hint")}</div>`;
 }
 
 export function bar() {
   if (state.analyzing) return "";
   if (state.carEditing)
-    return `<button class="cta" data-act="confirmCar">Подтвердить автомобиль</button>`;
+    return `<button class="cta" data-act="confirmCar">${t("car.confirm")}</button>`;
   return `
-    <button class="cta" data-act="acceptCar">Всё верно</button>
-    <button class="cta sec" data-act="editCar">Изменить</button>`;
+    <button class="cta" data-act="acceptCar">${t("car.accept")}</button>
+    <button class="cta sec" data-act="editCar">${t("car.edit")}</button>`;
 }
 
 export const actions = {

@@ -1,41 +1,47 @@
-import { nav, state } from "../state.js";
+import { t } from "../i18n.js";
+import { nav, setState, state } from "../state.js";
 import { ba } from "../ui.js";
 import { icon } from "../icons.js";
 
-const ADVANTAGES = [
-  "Примерка на вашей собственной фотографии",
-  "Совместимость подбирается под вашу машину",
-  "Установка включена в стоимость",
-];
-
 export function body() {
-  const rows = ADVANTAGES.map(
-    (t) => `<div class="row" style="padding:8px 0">
+  const rows = ["home.adv1", "home.adv2", "home.adv3"]
+    .map(
+      (key) => `<div class="row" style="padding:8px 0">
       <span style="color:var(--green);display:grid;place-items:center">${icon("check", 17, 2.4)}</span>
-      <span style="font-size:14px">${t}</span></div>`
-  ).join("");
+      <span style="font-size:14px">${t(key)}</span></div>`
+    )
+    .join("");
 
   return `
-    <h1>Примерь апгрейд на свою машину</h1>
-    <p>Загрузи фото салона, выбери руль, магнитолу или другой апгрейд и посмотри результат до установки.</p>
+    <div class="row" style="justify-content:space-between;margin-bottom:2px">
+      <button class="btn" style="font-size:12.5px;padding:5px 11px" data-act="openGallery">
+        ${icon("gallery", 14)} ${t("home.gallery")}</button>
+      <button class="btn" style="font-size:12.5px;padding:5px 11px" data-act="switchLang">
+        ${icon("globe", 14)} ${t("home.lang_switch")}</button>
+    </div>
+    <h1>${t("home.title")}</h1>
+    <p>${t("home.lede")}</p>
     ${ba({
       key: "homeSlider",
       value: state.homeSlider,
       height: 224,
       before: "/img/example/before.jpg",
       after: "/img/example/after.jpg",
-      beforeCap: "[ салон · штатный руль ]",
-      afterCap: "[ салон · новый руль ]",
+      beforeCap: t("home.cap_before"),
+      afterCap: t("home.cap_after"),
     })}
-    <div class="mono" style="text-align:center;margin:9px 0 4px">Потяни ползунок «До / После»</div>
+    <div class="mono" style="text-align:center;margin:9px 0 4px">${t("home.slider_hint")}</div>
     <div class="card">${rows}</div>`;
 }
 
 export const bar = () => `
-  <button class="cta" data-act="toPick">Выбрать, что примерить</button>
-  <button class="cta sec" data-act="toExample">Посмотреть пример</button>`;
+  <button class="cta" data-act="toPick">${t("home.cta_pick")}</button>
+  <button class="cta sec" data-act="toExample">${t("home.cta_example")}</button>`;
 
 export const actions = {
   toPick: () => nav("pick"),
   toExample: () => nav("example"),
+  openGallery: () => nav("gallery"),
+  // Reopen the language screen; it returns here after a choice.
+  switchLang: () => setState({ langReturn: "home", screen: "lang" }),
 };

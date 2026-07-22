@@ -1,5 +1,6 @@
 import { track } from "../analytics.js";
 import { api } from "../api.js";
+import { t } from "../i18n.js";
 import { icon } from "../icons.js";
 import {
   back,
@@ -30,13 +31,13 @@ export function body() {
   const job = state.job || {};
 
   const tags = (product?.tags || [])
-    .map((t) => `<span class="tag">${esc(t)}</span>`)
+    .map((tag) => `<span class="tag">${esc(tag)}</span>`)
     .join(" ");
 
   const buttons = [
-    ["another", "refresh", "Другой товар"],
-    ["edit", "rotate", "Изменить"],
-    ["save", "save", state.saved ? "Сохранено" : "Сохранить"],
+    ["another", "refresh", t("result.another")],
+    ["edit", "rotate", t("result.edit")],
+    ["save", "save", state.saved ? t("result.saved") : t("result.save")],
   ];
   // Sharing needs Telegram: the bot delivers the image into the user's own
   // chat. Nothing to fall back to in a browser, so the button is not offered.
@@ -44,7 +45,7 @@ export function body() {
     buttons.push([
       "share",
       "share",
-      state.sharing ? "Отправляем…" : state.shared ? "Отправлено" : "Поделиться",
+      state.sharing ? t("result.sharing") : state.shared ? t("result.shared") : t("result.share"),
     ]);
   }
 
@@ -66,12 +67,12 @@ export function body() {
       height: 280,
       before: job.before_url,
       after: job.after_url,
-      beforeCap: "[ фото пользователя ]",
-      afterCap: "[ AI-результат ]",
+      beforeCap: t("result.cap_before"),
+      afterCap: t("result.cap_after"),
     })}
     <div class="row" style="margin-top:11px">
-      <button class="btn ${state.resultSlider >= 100 ? "on" : ""}" style="flex:1" data-act="showBefore">До</button>
-      <button class="btn ${state.resultSlider <= 0 ? "on" : ""}" style="flex:1" data-act="showAfter">После</button>
+      <button class="btn ${state.resultSlider >= 100 ? "on" : ""}" style="flex:1" data-act="showBefore">${t("result.before")}</button>
+      <button class="btn ${state.resultSlider <= 0 ? "on" : ""}" style="flex:1" data-act="showAfter">${t("result.after")}</button>
       <button class="iconbtn" style="border:1px solid var(--line)" data-act="zoom">${icon("zoom", 18)}</button>
     </div>
 
@@ -79,7 +80,7 @@ export function body() {
       <div class="row" style="align-items:flex-start">
         <div style="flex:1"><h3>${esc(product?.name || "")}</h3>
           <div class="mut2" style="font-size:12px;margin-top:2px">
-            ${esc(product?.material || "")} · для ${esc(carLabelShort())}</div>
+            ${esc(product?.material || "")} · ${t("config.for")} ${esc(carLabelShort())}</div>
         </div>${stockPill(product?.stock || "in")}
       </div>
       <div class="chips" style="margin:10px 0 12px">${tags}</div>
@@ -92,7 +93,7 @@ export function body() {
         ? `<div class="note" style="color:var(--red)">${esc(state.resultError)}</div>`
         : ""
     }
-    <div class="note">AI-визуализация является предварительной. Итоговый вид может немного отличаться из-за освещения, ракурса и особенностей автомобиля.</div>`;
+    <div class="note">${t("result.note")}</div>`;
 }
 
 /** Full-screen before/after, reusing the same slider component as the card. */
@@ -109,8 +110,8 @@ export function overlay() {
           height: 460,
           before: job.before_url,
           after: job.after_url,
-          beforeCap: "[ фото пользователя ]",
-          afterCap: "[ AI-результат ]",
+          beforeCap: t("result.cap_before"),
+          afterCap: t("result.cap_after"),
         })}
       </div>
     </div>`;
@@ -118,7 +119,7 @@ export function overlay() {
 
 export const bar = () => `
   <button class="cta" data-act="addToCart" style="display:flex;align-items:center;justify-content:center;gap:10px">
-    ${icon("cart", 18)}<span>Добавить в корзину</span></button>`;
+    ${icon("cart", 18)}<span>${t("result.add_to_cart")}</span></button>`;
 
 export const actions = {
   showBefore: () => setState({ resultSlider: 100 }),
@@ -155,7 +156,7 @@ export const actions = {
     // what turns the later sendPhoto from a guaranteed 403 into a delivery.
     const granted = await tg.requestWriteAccess();
     if (!granted) {
-      setState({ resultError: "Без разрешения бот не сможет прислать изображение." });
+      setState({ resultError: t("result.share_denied") });
       return;
     }
 

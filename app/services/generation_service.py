@@ -22,7 +22,8 @@ from app.models.generation import (
     JobStatus,
 )
 from app.config import get_settings
-from app.services import notifications, photos, quota, referrals
+from app.db import connect
+from app.services import gallery, notifications, photos, quota, referrals
 from app.services.ai import get_image_generator
 from app.services.catalog_service import get_catalog
 
@@ -161,6 +162,45 @@ async def _run(job: GenerationJob, state: JobState) -> None:
     _finished_at[state.job_id] = time.monotonic()
     quota.commit(state.job_id)
     _settle_referral(state.job_id, job.source_photo_id)
+    _save_to_gallery(job, state)
+
+
+def _save_to_gallery(job: GenerationJob, state: JobState) -> None:
+    """Record the render in the owner's "Мои примерки".
+
+    Only metered Telegram users have a gallery; the job's owner is the user
+    behind its quota reservation, so a browser generation (no reservation) is
+    simply not saved. Best-effort: a save that fails must not fail the render the
+    customer already has.
+    """
+    reservation = quota.reservation_for(job.job_id)
+    if reservation is None or not state.after_photo_id:
+        return
+    try:
+        gallery.save(
+            user_id=reservation["user_id"],
+            job_id=job.job_id,
+            product_id=job.product_id,
+            category_id=job.category_id,
+            before_photo_id=job.source_photo_id,
+            after_photo_id=state.after_photo_id,
+            car_label=_car_label(reservation["user_id"]),
+        )
+    except Exception:  # noqa: BLE001 - a saved render must not fail a render
+        log.exception("gallery save failed for job %s", job.job_id)
+
+
+def _car_label(user_id: int) -> str | None:
+    """The user's confirmed car as one label, or None if none is on file."""
+    with connect() as conn:
+        row = conn.execute(
+            "SELECT car_brand, car_model, car_year FROM users WHERE id=?",
+            (user_id,),
+        ).fetchone()
+    if not row or not row["car_brand"]:
+        return None
+    parts = [row["car_brand"], row["car_model"], row["car_year"]]
+    return " ".join(str(p) for p in parts if p)
 
 
 def _settle_referral(job_id: str, source_photo_id: str) -> None:

@@ -111,3 +111,59 @@ def load_catalog(path: Path = CATALOG_PATH) -> Catalog:
 @lru_cache
 def get_catalog() -> Catalog:
     return load_catalog()
+
+
+# Tags are short marketing words shared across products; translating them via a
+# small map keeps the YAML free of per-product tag translations. Unmapped tags
+# (LED, brand words) pass through unchanged.
+TAG_UZ = {
+    "Карбон": "Karbon",
+    "LED": "LED",
+    "Лепестки": "Kurakchalar",
+    "Спорт": "Sport",
+    "Комфорт": "Komfort",
+    "Классика": "Klassika",
+    "Android": "Android",
+    "CarPlay": "CarPlay",
+    "Широкий": "Keng",
+    "Диффузор": "Diffuzor",
+    "Ночь": "Tungi",
+    "Разметка": "Chiziqlar",
+    "4 датчика": "4 datchik",
+    "Дисплей": "Displey",
+}
+
+# Which fields carry a `<field>_uz` sibling to swap in for Uzbek.
+_LOCALIZED_FIELDS = (
+    "label", "noun_cap", "title", "sub", "shoot_title", "pick_sub",
+    "gen_steps", "material", "time",
+)
+
+
+def _localize_node(node: dict, lang: str) -> dict:
+    """Recursively replace `field` with `field_uz` (when present) and drop the
+    `_uz` keys, so the client keeps reading plain `.label` etc."""
+    out = {}
+    for key, value in node.items():
+        if key.endswith("_uz"):
+            continue
+        if isinstance(value, dict):
+            out[key] = _localize_node(value, lang)
+        elif isinstance(value, list):
+            out[key] = [
+                _localize_node(v, lang) if isinstance(v, dict) else v for v in value
+            ]
+        else:
+            out[key] = value
+        if lang == "uz" and key in _LOCALIZED_FIELDS:
+            alt = node.get(f"{key}_uz")
+            if alt:
+                out[key] = alt
+    if lang == "uz" and "tags" in out:
+        out["tags"] = [TAG_UZ.get(tag, tag) for tag in out["tags"]]
+    return out
+
+
+def localized_catalog(lang: str) -> dict:
+    """The catalog as a plain dict with fields resolved to `lang` (ru fallback)."""
+    return _localize_node(get_catalog().model_dump(), lang)

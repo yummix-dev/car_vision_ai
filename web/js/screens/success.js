@@ -1,3 +1,4 @@
+import { t } from "../i18n.js";
 import { icon } from "../icons.js";
 import { reset, setState, state } from "../state.js";
 import { tg } from "../tg.js";
@@ -9,27 +10,27 @@ export function body() {
     <div style="display:grid;place-items:center;gap:14px;padding:44px 0 10px;text-align:center">
       <span style="width:66px;height:66px;border-radius:50%;background:var(--greenSoft);
         color:var(--green);display:grid;place-items:center">${icon("check", 32, 2.2)}</span>
-      <h2 style="margin:0">Заявка отправлена</h2>
+      <h2 style="margin:0">${t("success.title")}</h2>
       <div class="mut" style="font-size:13.5px;max-width:280px">
-        Менеджер свяжется с вами, подтвердит совместимость, стоимость и удобное время установки.
+        ${t("success.sub")}
       </div>
     </div>
     <div class="card" style="margin-top:18px">
       <div class="price">
-        <div class="pl"><span>Автомобиль</span><span>${esc(b?.car_label || state.carLabel)}</span></div>
-        <div class="pl"><span>Позиций</span><span>${b?.positions ?? state.cart.length}</span></div>
-        <div class="total"><span class="micro">Итого</span>
-          <span class="num">${esc(b?.total_formatted || "0")} сум</span></div>
+        <div class="pl"><span>${t("success.car")}</span><span>${esc(b?.car_label || state.carLabel)}</span></div>
+        <div class="pl"><span>${t("success.positions")}</span><span>${b?.positions ?? state.cart.length}</span></div>
+        <div class="total"><span class="micro">${t("success.total")}</span>
+          <span class="num">${esc(b?.total_formatted || "0")} ${t("ui.currency")}</span></div>
       </div>
     </div>
-    ${b ? `<div class="mono" style="text-align:center;margin-top:12px">[ заявка № ${esc(b.booking_id)} ]</div>` : ""}`;
+    ${b ? `<div class="mono" style="text-align:center;margin-top:12px">[ ${t("success.booking_no")} ${esc(b.booking_id)} ]</div>` : ""}`;
 }
 
 const botUsername = () => state.config?.telegram_bot_username || "";
 
 export const bar = () => `
-  ${botUsername() ? `<button class="cta" data-act="manager">Написать менеджеру</button>` : ""}
-  <button class="cta ${botUsername() ? "sec" : ""}" data-act="toHome">На главную</button>`;
+  ${botUsername() ? `<button class="cta" data-act="manager">${t("success.manager")}</button>` : ""}
+  <button class="cta ${botUsername() ? "sec" : ""}" data-act="toHome">${t("success.home")}</button>`;
 
 export const actions = {
   // Hidden entirely when no bot is configured — a button that opens nothing is

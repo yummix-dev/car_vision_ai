@@ -6,9 +6,10 @@ on the server (§22 of the spec, and the only sane way to run a balance).
 
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, Field
 
+from app.i18n import lang_of, t
 from app.routers.deps import current_user
 from app.services import notifications, quota, reward_codes
 
@@ -42,10 +43,14 @@ class ActivateRequest(BaseModel):
 
 @router.post("/reward-codes/activate")
 def activate_code(
-    req: ActivateRequest, user: dict | None = Depends(current_user)
+    req: ActivateRequest,
+    user: dict | None = Depends(current_user),
+    x_lang: str | None = Header(default=None),
 ) -> dict:
     if user is None:
-        raise HTTPException(status_code=401, detail="Откройте приложение в Telegram.")
+        raise HTTPException(
+            status_code=401, detail=t("err.no_telegram", lang_of(x_lang))
+        )
     try:
         result = reward_codes.activate(user["id"], req.code)
     except reward_codes.CodeError as exc:

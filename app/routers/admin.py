@@ -224,8 +224,10 @@ def _services_section() -> str:
               <td class='n'>
                 <details><summary class='btn'>Изменить</summary>
                 <form method='post' action='/admin/services/{s['id']}' class='row'
-                      style='gap:6px;margin-top:6px'>
+                      style='gap:6px;margin-top:6px;flex-wrap:wrap'>
                   <input name='name' value="{_e(s['name'])}" style='flex:1'>
+                  <input name='name_uz' value="{_e(s['name_uz'] or '')}"
+                    placeholder='ozʻbekcha (ixtiyoriy)' style='flex:1'>
                   <input name='price' type='number' value='{s['price']}' style='width:110px'>
                   <label style='font-size:12px'><input type='checkbox' name='default_on'
                     {'checked' if s['default_on'] else ''}> умолч.</label>
@@ -243,9 +245,11 @@ def _services_section() -> str:
         blocks.append(f"""<div style='margin-bottom:18px'>
           <div class='mono' style='color:#9aa7b8;margin-bottom:6px'>{_e(cat.label)}</div>
           {table}
-          <form method='post' action='/admin/services' class='row' style='gap:6px;margin-top:6px'>
+          <form method='post' action='/admin/services' class='row'
+                style='gap:6px;margin-top:6px;flex-wrap:wrap'>
             <input type='hidden' name='category_id' value='{_e(cat.id)}'>
             <input name='name' placeholder='Новая услуга' style='flex:1'>
+            <input name='name_uz' placeholder='ozʻbekcha (ixtiyoriy)' style='flex:1'>
             <input name='price' type='number' placeholder='цена' value='0' style='width:110px'>
             <button class='btn ok' type='submit'>Добавить</button>
           </form>
@@ -275,11 +279,12 @@ def _referral_chain_section() -> str:
 def create_service(
     category_id: str = Form(...),
     name: str = Form(...),
+    name_uz: str = Form(default=""),
     price: int = Form(default=0),
     _: None = Depends(_authorise),
 ):
     try:
-        services_repo.create(category_id, name, price)
+        services_repo.create(category_id, name, price, name_uz=name_uz)
     except services_repo.ServiceError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     return RedirectResponse("/admin", status_code=303)
@@ -289,6 +294,7 @@ def create_service(
 def edit_service(
     service_id: int,
     name: str = Form(...),
+    name_uz: str = Form(default=""),
     price: int = Form(default=0),
     default_on: bool = Form(default=False),
     active: bool = Form(default=False),
@@ -298,7 +304,8 @@ def edit_service(
     # above make "unchecked" mean False rather than "unchanged".
     try:
         services_repo.update(
-            service_id, name=name, price=price, default_on=default_on, active=active
+            service_id, name=name, price=price, default_on=default_on,
+            active=active, name_uz=name_uz,
         )
     except services_repo.ServiceError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc

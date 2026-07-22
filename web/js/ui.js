@@ -1,6 +1,7 @@
 // Shared UI pieces. Every render function returns an HTML string; events are
 // wired by delegation on [data-act] in app.js.
 import { icon } from "./icons.js";
+import { t } from "./i18n.js";
 import { fmt } from "./money.js";
 
 export const esc = (s) =>
@@ -16,16 +17,16 @@ export function ba({ key, value, height = 224, before, after, beforeCap, afterCa
   return `
   <div class="ba" data-ba="${key}" style="height:${height}px">
     <div class="${cls(before, false)}" style="${bg(before)}">
-      ${before ? "" : `<span class="mono">${esc(beforeCap || "[ до ]")}</span>`}
+      ${before ? "" : `<span class="mono">${esc(beforeCap || "")}</span>`}
     </div>
     <div class="${cls(after, true)}" data-ba-after
          style="${bg(after)};clip-path:inset(0 ${100 - value}% 0 0)">
-      ${after ? "" : `<span class="mono">${esc(afterCap || "[ после ]")}</span>`}
+      ${after ? "" : `<span class="mono">${esc(afterCap || "")}</span>`}
     </div>
     <div class="divider" data-ba-div style="left:${value}%"></div>
     <div class="handle" data-ba-handle style="left:${value}%">«»</div>
-    <span class="balbl" style="left:9px">До</span>
-    <span class="balbl" style="right:9px">После</span>
+    <span class="balbl" style="left:9px">${t("result.before")}</span>
+    <span class="balbl" style="right:9px">${t("result.after")}</span>
     <input class="bacut" type="range" min="0" max="100" value="${value}" data-slider="${key}">
   </div>`;
 }
@@ -51,7 +52,7 @@ export function appHeader({ inTelegram, canBack, cartCount }) {
   return `${backBtn}
     <div>
       <div class="hdr-title">MyCar Vision AI</div>
-      <div class="hdr-sub">мини-приложение</div>
+      <div class="hdr-sub">${t("ui.app_sub")}</div>
     </div>
     <span class="hdr-spacer"></span>
     ${cartBtn}
@@ -61,8 +62,8 @@ export function appHeader({ inTelegram, canBack, cartCount }) {
 
 export const stockPill = (stock) =>
   stock === "in"
-    ? `<span class="pill in">В наличии</span>`
-    : `<span class="pill order">Под заказ</span>`;
+    ? `<span class="pill in">${t("catalog.in_stock")}</span>`
+    : `<span class="pill order">${t("catalog.on_order")}</span>`;
 
 export function priceBlock(breakdown) {
   if (!breakdown) return "";
@@ -75,8 +76,8 @@ export function priceBlock(breakdown) {
     )
     .join("");
   return `<div class="price">${lines}
-    <div class="total"><span class="micro">Итого</span>
-      <span class="num">${esc(breakdown.total_formatted)} сум</span></div></div>`;
+    <div class="total"><span class="micro">${t("cart.total")}</span>
+      <span class="num">${esc(breakdown.total_formatted)} ${t("ui.currency")}</span></div></div>`;
 }
 
 /** Pure-CSS steering-wheel preview, coloured live from the current selections. */
@@ -121,7 +122,7 @@ const photoStyle = (photo) =>
     : "";
 
 export function productCard(p, { action = "openProduct" } = {}) {
-  const tags = p.tags.map((t) => `<span class="tag">${esc(t)}</span>`).join(" ");
+  const tags = p.tags.map((tag) => `<span class="tag">${esc(tag)}</span>`).join(" ");
   return `
   <div class="card">
     <div class="${p.photo ? "" : "ph"}" style="height:150px;margin:-14px -14px 12px;border-radius:var(--r-lg) var(--r-lg) 0 0;position:relative;display:grid;place-items:center;${photoStyle(p.photo)}">
@@ -136,7 +137,7 @@ export function productCard(p, { action = "openProduct" } = {}) {
       <div class="num" style="font-size:19px;white-space:nowrap">${fmt(p.base_price)}</div>
     </div>
     <div class="chips" style="margin:10px 0 12px">${tags}</div>
-    <button class="cta" data-act="${action}" data-id="${esc(p.id)}">Настроить</button>
+    <button class="cta" data-act="${action}" data-id="${esc(p.id)}">${t("catalog.configure")}</button>
   </div>`;
 }
 
@@ -162,12 +163,13 @@ const STEP_MAP = {
   pick: 0, upload: 1, car: 2, catalog: 3,
   config: 3, generating: 3, result: 3, cart: 3, request: 3,
 };
-const STEP_LABELS = ["Раздел", "Фото", "Авто", "Выбор"];
+const STEP_KEYS = ["ui.step_section", "ui.step_photo", "ui.step_car", "ui.step_choice"];
 
 export function stepIndicator(screen) {
   const active = STEP_MAP[screen];
   if (active === undefined) return "";
-  const items = STEP_LABELS.map((label, i) => {
+  const items = STEP_KEYS.map((key, i) => {
+    const label = t(key);
     const done = i < active;
     const on = i === active;
     const dot = done
@@ -187,7 +189,7 @@ export const optionGroup = (g, sel) => {
     return `<div class="optrow">
       <div>
         <div style="font-size:14px">${esc(g.label)}</div>
-        ${price ? `<div class="mut2" style="font-size:12px">+${fmt(price)} сум</div>` : ""}
+        ${price ? `<div class="mut2" style="font-size:12px">+${fmt(price)} ${t("ui.currency")}</div>` : ""}
       </div>
       <button class="sw-track ${current === "on" ? "on" : ""}"
         data-act="toggleOption" data-group="${esc(g.id)}"><b></b></button>

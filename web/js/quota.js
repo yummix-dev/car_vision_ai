@@ -4,6 +4,7 @@
 // No tokens, credits, limits or requests anywhere a customer can see.
 
 import { api } from "./api.js";
+import { t } from "./i18n.js";
 import { icon } from "./icons.js";
 import { setState, state } from "./state.js";
 import { tg } from "./tg.js";
@@ -30,8 +31,8 @@ export const exhausted = () => metered() && nextCharge() === "none";
 /** Suffix for the generate button: "Примерить · осталось 2". */
 export function buttonSuffix() {
   if (!metered()) return "";
-  if (freeLeft() > 0) return ` · осталось ${freeLeft()}`;
-  if (bonusLeft() > 0) return ` · бонусных ${bonusLeft()}`;
+  if (freeLeft() > 0) return t("config.suffix_left", { n: freeLeft() });
+  if (bonusLeft() > 0) return t("config.suffix_bonus", { n: bonusLeft() });
   return "";
 }
 
@@ -42,10 +43,10 @@ export function balanceChip(categoryLabel) {
   const bonus = bonusLeft();
   const line =
     left > 0
-      ? `Осталось ${left} из ${state.balance.current.free_limit} примерок`
+      ? t("quota.left_of", { n: left, max: state.balance.current.free_limit })
       : bonus > 0
-        ? "Бесплатные примерки закончились"
-        : "Примерки в этой категории закончились";
+        ? t("quota.free_out")
+        : t("quota.cat_out");
 
   return `
     <button class="card quota-chip" data-act="openBalance"
@@ -54,7 +55,7 @@ export function balanceChip(categoryLabel) {
         <div style="font-size:13.5px">${esc(categoryLabel)}</div>
         <div class="mut2" style="font-size:12px;margin-top:2px">${esc(line)}</div>
       </div>
-      ${bonus ? `<span class="pill in">Бонусные: ${bonus}</span>` : ""}
+      ${bonus ? `<span class="pill in">${t("quota.bonus", { n: bonus })}</span>` : ""}
       <span class="mut2">${icon("next", 16)}</span>
     </button>`;
 }
@@ -71,7 +72,7 @@ export function balanceSheet() {
       const left = entry ? entry.free_remaining : limit;
       const max = entry ? entry.free_limit : limit;
       return `<div class="pl"><span>${esc(c.label)}</span>
-        <span class="num">${left} из ${max}</span></div>`;
+        <span class="num">${left} / ${max}</span></div>`;
     })
     .join("");
 
@@ -88,29 +89,30 @@ export function balanceSheet() {
     <div class="sheet-back" data-act="closeBalance"></div>
     <div class="sheet">
       <div class="sheet-grip"></div>
-      <h3 style="margin:0 0 4px">AI-примерки</h3>
+      <h3 style="margin:0 0 4px">${t("quota.title")}</h3>
       <div class="mut2" style="font-size:12.5px;margin-bottom:12px">
-        Бесплатные примерки считаются отдельно для каждого раздела.
+        ${t("quota.by_section")}
       </div>
       <div class="price">${rows}
-        <div class="total"><span class="micro">Бонусные примерки</span>
+        <div class="total"><span class="micro">${t("quota.bonus_tries")}</span>
           <span class="num">${bonusLeft()}</span></div>
       </div>
-      ${history ? `<div class="micro" style="margin:14px 0 6px">Последние операции</div>
+      ${history ? `<div class="micro" style="margin:14px 0 6px">${t("quota.recent")}</div>
         <div class="price">${history}</div>` : ""}
-      <button class="cta" data-act="openReferral" style="margin-top:14px">Получить примерки</button>
-      <button class="cta sec" data-act="closeBalance" style="margin-top:9px">Понятно</button>
+      <button class="cta" data-act="openReferral" style="margin-top:14px">${t("quota.get_more")}</button>
+      <button class="cta sec" data-act="closeBalance" style="margin-top:9px">${t("quota.ok")}</button>
     </div>`;
 }
 
-const LABELS = {
-  spend: "Примерка",
-  refund: "Возврат за неудачную примерку",
-  grant: "Начислены бонусные примерки",
+const LABEL_KEYS = {
+  spend: "quota.op_spend",
+  refund: "quota.op_refund",
+  grant: "quota.op_grant",
 };
 
 function describe(entry) {
-  return LABELS[entry.transaction_type] || entry.transaction_type;
+  const key = LABEL_KEYS[entry.transaction_type];
+  return key ? t(key) : entry.transaction_type;
 }
 
 /** Shown instead of starting a generation when nothing is left to spend. */
@@ -120,17 +122,16 @@ export function exhaustedSheet() {
     <div class="sheet-back" data-act="closeExhausted"></div>
     <div class="sheet">
       <div class="sheet-grip"></div>
-      <h3 style="margin:0 0 6px">Примерки закончились</h3>
+      <h3 style="margin:0 0 6px">${t("quota.exhausted_title")}</h3>
       <p style="margin:0 0 14px">
-        Вы использовали все бесплатные примерки в этом разделе.
-        Каталог, сохранённые результаты и заявка на установку остаются доступны.
+        ${t("quota.exhausted_body")}
       </p>
       <div class="price">
-        <div class="pl"><span>Бонусные примерки</span><span class="num">${bonusLeft()}</span></div>
+        <div class="pl"><span>${t("quota.bonus_tries")}</span><span class="num">${bonusLeft()}</span></div>
       </div>
-      <button class="cta" data-act="openReferral" style="margin-top:14px">Пригласить друзей</button>
-      <button class="cta sec" data-act="openCode" style="margin-top:9px">Активировать код</button>
-      <button class="cta sec" data-act="closeExhausted" style="margin-top:9px">Вернуться к каталогу</button>
+      <button class="cta" data-act="openReferral" style="margin-top:14px">${t("quota.invite_friends")}</button>
+      <button class="cta sec" data-act="openCode" style="margin-top:9px">${t("quota.activate_code")}</button>
+      <button class="cta sec" data-act="closeExhausted" style="margin-top:9px">${t("quota.back_to_catalog")}</button>
     </div>`;
 }
 
@@ -144,40 +145,38 @@ export function codeSheet() {
       <div class="sheet-grip"></div>
       ${
         ok
-          ? `<h3 style="margin:0 0 6px">Код активирован</h3>
+          ? `<h3 style="margin:0 0 6px">${t("quota.code_activated")}</h3>
              <p style="margin:0 0 14px">${esc(describeReward(ok))}</p>
-             <button class="cta" data-act="closeCode">Отлично</button>`
-          : `<h3 style="margin:0 0 6px">Активировать бонус</h3>
-             <p style="margin:0 0 12px">Код выдаётся после визита в мастерскую
-                или установки. Введите его, чтобы получить примерки.</p>
+             <button class="cta" data-act="closeCode">${t("quota.code_great")}</button>`
+          : `<h3 style="margin:0 0 6px">${t("quota.code_title")}</h3>
+             <p style="margin:0 0 12px">${t("quota.code_body")}</p>
              <div class="field">
-               <input type="text" data-field="code" placeholder="Например, K7QX2M4P"
+               <input type="text" data-field="code" placeholder="${t("quota.code_ph")}"
                       value="${esc(state.codeInput || "")}"
                       style="text-transform:uppercase">
              </div>
              ${state.codeError ? `<div class="note" style="color:var(--red)">${esc(state.codeError)}</div>` : ""}
              <button class="cta" data-act="submitCode" style="margin-top:10px"
                      ${state.codeBusy ? "disabled" : ""}>
-               ${state.codeBusy ? "Проверяем…" : "Активировать"}</button>
-             ${tg.canScanQr ? `<button class="cta sec" data-act="scanCode" style="margin-top:9px">Сканировать QR-код</button>` : ""}
-             <button class="cta sec" data-act="closeCode" style="margin-top:9px">Отмена</button>`
+               ${state.codeBusy ? t("quota.code_checking") : t("quota.code_activate")}</button>
+             ${tg.canScanQr ? `<button class="cta sec" data-act="scanCode" style="margin-top:9px">${t("quota.code_scan")}</button>` : ""}
+             <button class="cta sec" data-act="closeCode" style="margin-top:9px">${t("quota.code_cancel")}</button>`
       }
     </div>`;
 }
 
 function describeReward(r) {
   const parts = [];
-  if (r.restored_free) parts.push("бесплатные примерки восстановлены во всех разделах");
-  if (r.bonus_amount) parts.push(`начислено бонусных примерок: ${r.bonus_amount}`);
-  return parts.length ? parts.join(", ") : "Бонус применён.";
+  if (r.restored_free) parts.push(t("quota.reward_restored"));
+  if (r.bonus_amount) parts.push(t("quota.reward_bonus", { n: r.bonus_amount }));
+  return parts.length ? parts.join(", ") : t("quota.reward_applied");
 }
 
 /** Shown to somebody who arrived by invitation and has not generated yet.
  *  Says nothing about who invited them — §8 forbids exposing that. */
 export function invitedNote() {
   if (!state.invitedPending) return "";
-  return `<div class="note blue">Вы пришли по приглашению.
-    Создайте свою первую примерку, чтобы друг получил бонус.</div>`;
+  return `<div class="note blue">${t("ref.invited_note")}</div>`;
 }
 
 /** Confirmation before a bonus try is spent — the customer should know. */
@@ -187,12 +186,11 @@ export function bonusConfirmSheet() {
     <div class="sheet-back" data-act="cancelBonus"></div>
     <div class="sheet">
       <div class="sheet-grip"></div>
-      <h3 style="margin:0 0 6px">Использовать бонусную примерку?</h3>
+      <h3 style="margin:0 0 6px">${t("quota.bonus_confirm_title")}</h3>
       <p style="margin:0 0 14px">
-        Бесплатные примерки в этом разделе закончились.
-        Будет использована 1 бонусная примерка. Осталось: ${bonusLeft()}.
+        ${t("quota.bonus_confirm_body", { n: bonusLeft() })}
       </p>
-      <button class="cta" data-act="confirmBonus">Продолжить</button>
-      <button class="cta sec" data-act="cancelBonus" style="margin-top:9px">Отмена</button>
+      <button class="cta" data-act="confirmBonus">${t("quota.bonus_continue")}</button>
+      <button class="cta sec" data-act="cancelBonus" style="margin-top:9px">${t("quota.bonus_cancel")}</button>
     </div>`;
 }

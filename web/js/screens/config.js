@@ -67,8 +67,8 @@ function serviceSection() {
       return `<div class="optrow">
         <div>
           <div style="font-size:14px">${esc(s.name)}</div>
-          ${s.price ? `<div class="mut2" style="font-size:12px">+${fmt(s.price)} сум</div>`
-                    : `<div class="mut2" style="font-size:12px">бесплатно</div>`}
+          ${s.price ? `<div class="mut2" style="font-size:12px">+${fmt(s.price)} ${t("ui.currency")}</div>`
+                    : `<div class="mut2" style="font-size:12px">${t("config.free")}</div>`}
         </div>
         <button class="sw-track ${on ? "on" : ""}" data-act="toggleService"
           data-id="${s.id}"><b></b></button>
@@ -76,13 +76,13 @@ function serviceSection() {
     })
     .join("");
   return `<div class="card" style="padding:2px 14px 12px;margin-top:12px">
-    <div class="micro" style="margin:11px 0 4px">Услуги</div>${rows}</div>`;
+    <div class="micro" style="margin:11px 0 4px">${t("config.services")}</div>${rows}</div>`;
 }
 
 export function body() {
   const cat = currentCategory();
   const product = currentProduct();
-  if (!cat || !product) return `<p>Товар не выбран.</p>`;
+  if (!cat || !product) return `<p>${t("config.no_product")}</p>`;
 
   // A real photo of the part beats the CSS mock-up of one; the wheel preview
   // stays as the fallback for products the shop has not photographed yet.
@@ -100,7 +100,7 @@ export function body() {
     <div class="card" style="padding:0;overflow:hidden">${preview}</div>
     <h2 style="margin-top:14px">${esc(product.name)}</h2>
     <div class="mut2" style="font-size:12.5px;margin-bottom:12px">
-      ${esc(product.material || "")} · для ${esc(carLabelShort())}
+      ${esc(product.material || "")} · ${t("config.for")} ${esc(carLabelShort())}
     </div>
     <div class="card" style="padding:2px 14px 12px">${groups}</div>
     ${serviceSection()}
@@ -110,8 +110,8 @@ export function body() {
 }
 
 export const bar = () => `
-  <button class="cta" data-act="generate">Примерить на моей машине${buttonSuffix()}</button>
-  <button class="cta sec" data-act="another">Выбрать другой товар</button>`;
+  <button class="cta" data-act="generate">${t("config.cta_generate")}${buttonSuffix()}</button>
+  <button class="cta sec" data-act="another">${t("config.cta_another")}</button>`;
 
 export const overlay = () =>
   balanceSheet() + exhaustedSheet() + bonusConfirmSheet() + codeSheet();
@@ -184,7 +184,7 @@ export const actions = {
   submitCode: () => activateCode((state.codeInput || "").trim()),
 
   scanCode: async () => {
-    const scanned = await tg.scanQr("Наведите на QR-код");
+    const scanned = await tg.scanQr(t("quota.scan_hint"));
     if (!scanned) return;
     // The QR may hold the bare code or a URL ending in it; take the last chunk.
     const code = scanned.trim().split(/[/?=\s]/).filter(Boolean).pop() || "";

@@ -1,11 +1,14 @@
 import { sessionId } from "./analytics.js";
+import { getLang } from "./i18n.js";
 import { tg } from "./tg.js";
 
-/** initData for identity, session id so server-side events join the funnel. */
+/** initData for identity, session id so server-side events join the funnel,
+ *  and the chosen language so localized catalog and error strings come back. */
 function authHeaders() {
   return {
     ...(tg.initData ? { "X-Telegram-Init-Data": tg.initData } : {}),
     "X-Session-Id": sessionId,
+    "X-Lang": getLang() || "ru",
   };
 }
 
@@ -132,4 +135,10 @@ export const api = {
 
   booking: (payload) =>
     req("/api/booking", { method: "POST", body: JSON.stringify(payload) }),
+
+  // "Мои примерки" — the user's own saved renders. Empty in a browser.
+  gallery: () => req("/api/gallery"),
+
+  deleteGalleryItem: (id) =>
+    req(`/api/gallery/${encodeURIComponent(id)}`, { method: "DELETE" }),
 };

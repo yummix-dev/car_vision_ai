@@ -89,7 +89,10 @@ def resolve(category_id: str, service_ids: list[int]) -> list[dict]:
 # ── admin mutations ───────────────────────────────────────────
 
 
-def create(category_id: str, name: str, price: int, default_on: bool = False) -> dict:
+def create(
+    category_id: str, name: str, price: int, default_on: bool = False,
+    name_uz: str | None = None,
+) -> dict:
     name = (name or "").strip()
     if not name:
         raise ServiceError("Название услуги обязательно")
@@ -98,6 +101,7 @@ def create(category_id: str, name: str, price: int, default_on: bool = False) ->
     if get_catalog().category(category_id) is None:
         raise ServiceError(f"Unknown category {category_id}")
 
+    name_uz = (name_uz or "").strip() or None
     now = _now()
     with connect(immediate=True) as conn:
         nxt = conn.execute(
@@ -105,24 +109,28 @@ def create(category_id: str, name: str, price: int, default_on: bool = False) ->
             (category_id,),
         ).fetchone()[0]
         cur = conn.execute(
-            "INSERT INTO services(category_id, name, price, default_on, active,"
-            " sort, created_at, updated_at) VALUES(?,?,?,?,1,?,?,?)",
-            (category_id, name, price, int(bool(default_on)), nxt, now, now),
+            "INSERT INTO services(category_id, name, name_uz, price, default_on, active,"
+            " sort, created_at, updated_at) VALUES(?,?,?,?,?,1,?,?,?)",
+            (category_id, name, name_uz, price, int(bool(default_on)), nxt, now, now),
         )
         return dict(conn.execute("SELECT * FROM services WHERE id=?", (cur.lastrowid,)).fetchone())
 
 
-def update(service_id: int, *, name: str, price: int, default_on: bool, active: bool) -> None:
+def update(
+    service_id: int, *, name: str, price: int, default_on: bool, active: bool,
+    name_uz: str | None = None,
+) -> None:
     name = (name or "").strip()
     if not name:
         raise ServiceError("Название услуги обязательно")
     if price < 0:
         raise ServiceError("Цена не может быть отрицательной")
+    name_uz = (name_uz or "").strip() or None
     with connect(immediate=True) as conn:
         conn.execute(
-            "UPDATE services SET name=?, price=?, default_on=?, active=?, updated_at=?"
+            "UPDATE services SET name=?, name_uz=?, price=?, default_on=?, active=?, updated_at=?"
             " WHERE id=?",
-            (name, price, int(bool(default_on)), int(bool(active)), _now(), service_id),
+            (name, name_uz, price, int(bool(default_on)), int(bool(active)), _now(), service_id),
         )
 
 

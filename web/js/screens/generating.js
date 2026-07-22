@@ -1,5 +1,6 @@
 import { track } from "../analytics.js";
 import { api } from "../api.js";
+import { t } from "../i18n.js";
 import { icon } from "../icons.js";
 import { refreshBalance } from "../quota.js";
 import {
@@ -20,14 +21,16 @@ export function body() {
     return `
       <div style="display:grid;place-items:center;gap:14px;padding:56px 0;text-align:center">
         <span style="color:var(--red)">${icon("warn", 40, 1.6)}</span>
-        <h2 style="margin:0">Не удалось точно распознать фото</h2>
+        <h2 style="margin:0">${t("gen.error_title")}</h2>
         <div class="mut" style="font-size:13.5px;max-width:270px">
-          Попробуйте загрузить фотографию, где нужная зона полностью видна и хорошо освещена.
+          ${t("gen.error_sub")}
         </div>
       </div>`;
   }
 
-  const steps = (job?.steps || currentCategory()?.gen_steps || []).map((s, i) => {
+  // Prefer the localized catalog steps over the server's (which are Russian);
+  // job.step_index still drives which one is active.
+  const steps = (currentCategory()?.gen_steps || job?.steps || []).map((s, i) => {
     const idx = job?.step_index ?? 0;
     const done = i < idx || job?.status === "done";
     const on = i === idx;
@@ -44,11 +47,11 @@ export function body() {
         <div class="spinner"></div>
       </div>
     </div>
-    <h2 style="margin-top:16px">Создаём визуализацию</h2>
+    <h2 style="margin-top:16px">${t("gen.title")}</h2>
     <p data-gen="sub">${esc(job?.sub || "")}</p>
     <div class="progress"><b data-gen="bar" style="width:${pct}%"></b></div>
     <div class="row" style="justify-content:space-between;margin-top:7px">
-      <span class="micro">Прогресс</span><span class="num" data-gen="pct">${pct}%</span>
+      <span class="micro">${t("gen.progress")}</span><span class="num" data-gen="pct">${pct}%</span>
     </div>
     <ul class="checklist" data-gen="steps">${steps}</ul>`;
 }
@@ -86,7 +89,7 @@ export function patch() {
 
 export function bar() {
   if (state.job?.status === "error")
-    return `<button class="cta" data-act="retry">Загрузить другое фото</button>`;
+    return `<button class="cta" data-act="retry">${t("gen.retry")}</button>`;
   return "";
 }
 

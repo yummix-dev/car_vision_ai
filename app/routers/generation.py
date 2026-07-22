@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel
 
 from app.config import get_settings
+from app.i18n import lang_of, t
 from app.models.generation import GenerationRequest, JobStatus, JobState
 from app.models.telegram import TelegramUser
 from app.routers.deps import current_user, require_telegram_user, telegram_user
@@ -34,8 +35,10 @@ async def start_generation(
     user: TelegramUser | None = Depends(telegram_user),
     account: dict | None = Depends(current_user),
     x_session_id: str | None = Header(default=None),
+    x_lang: str | None = Header(default=None),
     idempotency_key: str | None = Header(default=None),
 ) -> JobState:
+    lang = lang_of(x_lang)
     # The hourly cap and the try-on quota are different things and both stay:
     # the quota is the product rule, this is the abuse guard that also covers
     # unmetered browser traffic.
@@ -43,7 +46,7 @@ async def start_generation(
     if not rate_limit.check(key, get_settings().generation_limit_per_hour):
         raise HTTPException(
             status_code=429,
-            detail="Слишком много генераций за час. Попробуйте позже.",
+            detail=t("err.rate_limited", lang),
         )
 
     found = get_catalog().find_product(req.product_id)
@@ -61,7 +64,7 @@ async def start_generation(
         except quota.QuotaExhausted as exc:
             raise HTTPException(
                 status_code=409,
-                detail="Примерки в этой категории закончились.",
+                detail=t("err.quota_exhausted", lang),
             ) from exc
 
     try:
@@ -95,10 +98,14 @@ def _warn_if_running_low(account: dict, category) -> None:
 
 
 @router.get("/{job_id}")
-def poll_generation(job_id: str) -> JobState:
+def poll_generation(
+    job_id: str, x_lang: str | None = Header(default=None)
+) -> JobState:
     state = generation_service.get_job(job_id)
     if state is None:
-        raise HTTPException(status_code=404, detail="Задача не найдена")
+        raise HTTPException(
+            status_code=404, detail=t("err.job_not_found", lang_of(x_lang))
+        )
     return state
 
 
@@ -117,6 +124,7 @@ async def share_result(
     req: ShareRequest,
     user: TelegramUser = Depends(require_telegram_user),
     account: dict | None = Depends(current_user),
+    x_lang: str | None = Header(default=None),
 ) -> ShareResponse:
     """Send the finished render into the requester's own chat with the bot.
 
@@ -124,14 +132,17 @@ async def share_result(
     caller-supplied filename would let anyone have the bot mail them any image
     sitting in media/, including other people's uploads.
     """
+    lang = lang_of(x_lang)
     state = generation_service.get_job(req.job_id)
     if state is None or state.status is not JobStatus.done or not state.after_photo_id:
-        raise HTTPException(status_code=404, detail="Результат не найден")
+        raise HTTPException(status_code=404, detail=t("err.result_not_found", lang))
 
     try:
         image_bytes, _ = photos.load_bytes(state.after_photo_id)
     except photos.PhotoError as exc:
-        raise HTTPException(status_code=404, detail="Результат не найден") from exc
+        raise HTTPException(
+            status_code=404, detail=t("err.result_not_found", lang)
+        ) from exc
 
     found = get_catalog().find_product(req.product_id) if req.product_id else None
     card = _build_card(image_bytes, found, req)
@@ -161,11 +172,11 @@ async def share_result(
     except WriteAccessDenied as exc:
         raise HTTPException(
             status_code=403,
-            detail="Разрешите боту писать вам, чтобы получить изображение.",
+            detail=t("err.write_denied", lang),
         ) from exc
     except PhotoSendError as exc:
         raise HTTPException(
-            status_code=502, detail="Не удалось отправить изображение."
+            status_code=502, detail=t("err.image_failed", lang)
         ) from exc
 
     return ShareResponse()
