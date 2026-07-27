@@ -10,5 +10,7 @@ __pycache__/
 # Uploaded and generated images. The demo photo is regenerated at startup.
 media/
 
-# The analytics SQLite file.
-data/
+# Runtime SQLite files (analytics.db, app.db, e2e-*.db). Anchored to the repo
+# root with a leading slash so it does NOT also ignore app/data/ — that holds
+# catalog.yaml, a tracked source file.
+/data/

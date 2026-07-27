@@ -12,11 +12,12 @@ def sel(**kwargs) -> list[Selection]:
 
 
 def test_wheel_defaults_apply_product_preset():
-    # AMG Carbon LED ships with carbon insert, logo mark, LED and paddles on.
+    # Mercedes-AMG Performance ships as leather with LED and paddles on (its
+    # reference photo is a leather AMG wheel; carbon insert is an opt-in extra).
     q = quote("amg", [])
-    assert q.total == 6_200_000 + 300_000 + 150_000 + 250_000 + 200_000
-    assert q.total == 7_100_000
-    assert q.total_formatted == "7 100 000"
+    assert q.total == 6_200_000 + 250_000 + 200_000
+    assert q.total == 6_650_000
+    assert q.total_formatted == "6 650 000"
 
 
 def test_wheel_stripped_to_base():

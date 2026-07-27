@@ -177,7 +177,7 @@ export function stepIndicator(screen) {
       : `<span class="stepdot ${on ? "on" : ""}">${i + 1}</span>`;
     return `<div class="step">${dot}
       <span class="steplbl ${on || done ? "on" : ""}">${label}</span>
-      ${i < STEP_LABELS.length - 1 ? '<span class="stepline"></span>' : ""}</div>`;
+      ${i < STEP_KEYS.length - 1 ? '<span class="stepline"></span>' : ""}</div>`;
   }).join("");
   return `<div class="steps">${items}</div>`;
 }

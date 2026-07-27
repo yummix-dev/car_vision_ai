@@ -263,5 +263,5 @@ def test_admin_shows_catalog_names_not_ids(monkeypatch):
     _seed("a", "product_opened", product_id="amg", category_id="rul")
 
     res = client.get("/admin", headers=_auth("secret"))
-    assert "AMG Carbon LED" in res.text
+    assert "Mercedes-AMG Performance" in res.text
     assert "Руль" in res.text

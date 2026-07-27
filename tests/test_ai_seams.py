@@ -186,10 +186,10 @@ async def test_provider_prompt_carries_the_zone_and_the_resolved_config():
 
     prompt = edits.calls[0]["prompt"]
     assert "руль" in prompt                 # the zone, from region_label
-    assert "AMG Carbon LED" in prompt       # the product
+    assert "Mercedes-AMG Performance" in prompt  # the product
     assert "Бежевый" in prompt              # the explicit selection
     assert "#c9b79c" in prompt              # its swatch, for colour accuracy
-    assert "Красная" in prompt              # a default that was never overridden
+    assert "Чёрная" in prompt               # a default (stitch) that was never overridden
 
 
 @pytest.mark.asyncio

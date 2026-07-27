@@ -49,15 +49,15 @@ def test_a_selected_service_adds_a_line_and_its_price():
     q = quote("amg", [], [svc["id"]])
 
     assert any(line.label == "Установка руля" and line.amount == 500_000 for line in q.lines)
-    # amg base+options is 7_100_000; the service is on top.
-    assert q.total == 7_100_000 + 500_000
+    # amg base+options is 6_650_000; the service is on top.
+    assert q.total == 6_650_000 + 500_000
 
 
 def test_multiple_services_stack():
     a = _service(name="Установка", price=400_000)
     b = _service(name="Перепайка", price=150_000)
     q = quote("amg", [], [a["id"], b["id"]])
-    assert q.total == 7_100_000 + 400_000 + 150_000
+    assert q.total == 6_650_000 + 400_000 + 150_000
 
 
 def test_a_service_from_another_category_is_rejected():
@@ -82,12 +82,12 @@ def test_an_unknown_service_id_is_rejected():
 def test_a_repeated_service_id_is_charged_once():
     svc = _service(price=500_000)
     q = quote("amg", [], [svc["id"], svc["id"]])
-    assert q.total == 7_100_000 + 500_000
+    assert q.total == 6_650_000 + 500_000
 
 
 def test_no_services_leaves_the_quote_unchanged():
     q = quote("amg", [])
-    assert q.total == 7_100_000
+    assert q.total == 6_650_000
 
 
 # ── resolve ordering ──────────────────────────────────────────
@@ -138,4 +138,4 @@ def test_booking_recomputes_total_with_services(monkeypatch):
         },
     )
     assert res.status_code == 200
-    assert res.json()["total"] == 7_100_000 + 500_000
+    assert res.json()["total"] == 6_650_000 + 500_000

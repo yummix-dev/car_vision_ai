@@ -18,7 +18,7 @@ from app.services import telegram as tg_service
 
 from tests.test_telegram import TOKEN, make_init_data
 
-CAPTION_PRODUCT = "AMG Carbon LED"
+CAPTION_PRODUCT = "Mercedes-AMG Performance"
 
 
 @pytest.fixture

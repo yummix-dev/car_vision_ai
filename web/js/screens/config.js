@@ -1,5 +1,6 @@
 import { track } from "../analytics.js";
 import { api } from "../api.js";
+import { t } from "../i18n.js";
 import {
   back,
   carLabelShort,

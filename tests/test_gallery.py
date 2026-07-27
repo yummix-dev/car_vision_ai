@@ -163,7 +163,7 @@ def test_gallery_lists_saved_renders_with_localized_category():
 
     ru = client.get("/api/gallery", headers={"X-Telegram-Init-Data": make_init_data()}).json()
     assert len(ru) == 1
-    assert ru[0]["product_name"] == "AMG Carbon LED"   # brand, not translated
+    assert ru[0]["product_name"] == "Mercedes-AMG Performance"   # brand, not translated
     assert ru[0]["category_label"] == "Руль"
     assert ru[0]["after_url"].endswith("a1-after.jpg")
 

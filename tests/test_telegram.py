@@ -179,7 +179,7 @@ def test_booking_is_delivered_to_the_manager(client, monkeypatch):
 
     text = sent["text"]
     assert res.json()["booking_id"] in text
-    assert "AMG Carbon LED" in text          # the position
+    assert "Mercedes-AMG Performance" in text  # the position
     assert "+998901234567" in text           # how to call back
     assert res.json()["total_formatted"] in text
 

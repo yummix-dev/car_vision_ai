@@ -4,9 +4,12 @@ Drop a photo here and name it in `app/data/catalog.yaml`:
 
 ```yaml
 - id: amg
-  name: AMG Carbon LED
+  name: Mercedes-AMG Performance
   photo: amg.jpg          # -> web/img/products/amg.jpg
 ```
+
+A product with no `photo:` (e.g. `rs` / Carbon RS, awaiting a real shot) shows
+the striped placeholder and falls back to describing the part in words.
 
 The same file does two jobs: it replaces the striped placeholder on the catalog
 card, and it is handed to the image model as a reference so the customer sees

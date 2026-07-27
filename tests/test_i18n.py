@@ -66,9 +66,9 @@ def test_catalog_uz_leaves_product_names_and_translates_material_tags():
     rul = next(c for c in cats if c["id"] == "rul")
     amg = next(p for p in rul["products"] if p["id"] == "amg")
 
-    assert amg["name"] == "AMG Carbon LED"  # brand, untranslated
-    assert amg["material"] == "Teri + karbon"
-    assert amg["tags"] == ["Karbon", "LED", "Kurakchalar"]
+    assert amg["name"] == "Mercedes-AMG Performance"  # brand, untranslated
+    assert amg["material"] == "Teri + perforatsiya"
+    assert amg["tags"] == ["AMG", "LED", "Kurakchalar"]  # AMG/LED pass through, Лепестки→Kurakchalar
 
 
 def test_catalog_uz_has_no_cyrillic_in_rendered_fields():

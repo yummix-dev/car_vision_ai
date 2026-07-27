@@ -1,0 +1,625 @@
+# MyCar Vision AI — каталог магазина.
+# Цены в сумах, целыми числами. Правится владельцем магазина без изменения кода.
+# Валидируется при старте приложения (app/services/catalog_service.py).
+#
+# Узбекские поля (*_uz) — перевод на узбекский (латиница). Сделан не носителем,
+# ТРЕБУЕТ ВЫЧИТКИ перед запуском. Если *_uz пусто — показывается русский текст.
+
+car_options:
+  brands: [Chevrolet, Ravon, Daewoo]
+  models: [Cobalt, Malibu, Nexia, Gentra]
+  years: [2021, 2022, 2023, 2024]
+
+categories:
+  # ────────────────────────────────────────────────────────── РУЛЬ
+  - id: rul
+    label: Руль
+    label_uz: Rul
+    photo: rul.jpg
+    noun: руль
+    noun_cap: Руль
+    noun_cap_uz: Rul
+    acc: руль
+    title: Рули
+    title_uz: Rullar
+    sub: Кожа, карбон, подрулевые лепестки и LED-подсветка.
+    sub_uz: Teri, karbon, rul kurakchalari va LED-yoritish.
+    shoot_title: Сфотографируйте руль
+    shoot_title_uz: Rulni suratga oling
+    pick_sub: Кожа, карбон, LED
+    pick_sub_uz: Teri, karbon, LED
+    is_wheel: true
+    gen_steps:
+      - Определяем положение старого руля
+      - Настраиваем размер и перспективу
+      - Добавляем выбранный руль
+      - Подстраиваем освещение и отражения
+      - Проверяем результат
+    gen_steps_uz:
+      - Eski rul holatini aniqlaymiz
+      - Oʻlcham va perspektivani sozlaymiz
+      - Tanlangan rulni qoʻshamiz
+      - Yoritish va aks etishlarni moslaymiz
+      - Natijani tekshiramiz
+    option_groups:
+      - id: leather
+        label: Цвет кожи
+        label_uz: Teri rangi
+        type: segment
+        default: black
+        ui: swatch_square
+        choices:
+          - { id: black, label: Чёрный, label_uz: Qora, hex: "#1c1c1e" }
+          - { id: gray, label: Серый, label_uz: Kulrang, hex: "#5b626b" }
+          - { id: beige, label: Бежевый, label_uz: Bej, hex: "#c9b79c" }
+          - { id: brown, label: Коричневый, label_uz: Jigarrang, hex: "#6b4a34" }
+          - { id: red, label: Красный, label_uz: Qizil, hex: "#7a2530" }
+      - id: stitch
+        label: Цвет строчки
+        label_uz: Chok rangi
+        type: segment
+        default: red
+        ui: swatch_round
+        choices:
+          - { id: red, label: Красная, label_uz: Qizil, hex: "#d64545" }
+          - { id: blue, label: Синяя, label_uz: Koʻk, hex: "#3b82f6" }
+          - { id: white, label: Белая, label_uz: Oq, hex: "#e8e8e8" }
+          - { id: black, label: Чёрная, label_uz: Qora, hex: "#2a2a2a" }
+          - { id: yellow, label: Жёлтая, label_uz: Sariq, hex: "#d9a441" }
+      - id: insert
+        label: Вставка
+        label_uz: Qoplama
+        type: segment
+        default: leather
+        choices:
+          - { id: leather, label: Кожа, label_uz: Teri, price_delta: 0 }
+          - { id: carbon, label: Карбон, label_uz: Karbon, price_delta: 300000 }
+          - { id: alcantara, label: Алькантара, label_uz: Alkantara, price_delta: 150000 }
+      - id: mark
+        label: Метка 12 часов
+        label_uz: 12 soatlik belgi
+        type: segment
+        default: logo
+        choices:
+          - { id: none, label: Нет, label_uz: Yoʻq, price_delta: 0 }
+          - { id: logo, label: Логотип, label_uz: Logotip, price_delta: 150000 }
+          - { id: carbon, label: Карбон, label_uz: Karbon, price_delta: 250000 }
+      - id: led
+        label: LED-подсветка
+        label_uz: LED-yoritish
+        type: toggle
+        default: "on"
+        ui: switch
+        choices:
+          - { id: "on", label: LED-подсветка, label_uz: LED-yoritish, price_delta: 250000 }
+      - id: paddles
+        label: Подрулевые лепестки
+        label_uz: Rul kurakchalari
+        type: toggle
+        default: "on"
+        ui: switch
+        choices:
+          - { id: "on", label: Подрулевые лепестки, label_uz: Rul kurakchalari, price_delta: 200000 }
+    products:
+      # Товары названы по реальным рулям, снятым для эталонов генерации (фото в
+      # web/img/products/). ID сохранены — на них ссылаются сохранённые корзины.
+      - id: amg
+        category: rul
+        name: Mercedes-AMG Performance
+        base_price: 6200000
+        material: Кожа + перфорация
+        material_uz: Teri + perforatsiya
+        photo: amg.jpg
+        tags: [AMG, LED, Лепестки]
+        time: 2–3 часа
+        time_uz: 2–3 soat
+        stock: in
+        popular: true
+        # LED — пакет магазина (подсветку добавляют при установке), поэтому led on
+        # по умолчанию, хотя на эталонном фото её нет — модель дорисует по промпту.
+        flags: { carbon: false, has_led: true, has_paddles: true }
+        default_config:
+          { leather: black, stitch: black, insert: leather, mark: none, led: "on", paddles: "on" }
+      - id: rs
+        category: rul
+        name: Carbon RS
+        base_price: 6900000
+        material: Карбон
+        material_uz: Karbon
+        # TODO: ждём реальное фото карбонового руля с лепестками; пока показываем
+        # плейсхолдер (photo не задан).
+        tags: [Карбон, Спорт, Лепестки]
+        time: 2–3 часа
+        time_uz: 2–3 soat
+        stock: in
+        popular: true
+        flags: { carbon: true, has_led: false, has_paddles: true }
+        default_config:
+          { leather: black, stitch: white, insert: carbon, mark: carbon, led: "off", paddles: "on" }
+      - id: sport
+        category: rul
+        name: BMW M Performance
+        base_price: 4000000
+        material: Кожа
+        material_uz: Teri
+        photo: sport.jpg
+        tags: [BMW M, Спорт, Лепестки]
+        time: 2 часа
+        time_uz: 2 soat
+        stock: in
+        popular: true
+        flags: { carbon: false, has_led: false, has_paddles: true }
+        default_config:
+          { leather: black, stitch: blue, insert: leather, mark: none, led: "off", paddles: "on" }
+      - id: urban
+        category: rul
+        name: Mercedes C-Class W205
+        base_price: 3400000
+        material: Кожа
+        material_uz: Teri
+        photo: urban.jpg
+        tags: [Mercedes, Комфорт]
+        time: 2 часа
+        time_uz: 2 soat
+        stock: in
+        flags: { carbon: false, has_led: false, has_paddles: false }
+        default_config:
+          { leather: black, stitch: white, insert: leather, mark: none, led: "off", paddles: "off" }
+      - id: classic
+        category: rul
+        name: Chevrolet Malibu
+        base_price: 2900000
+        material: Кожа + алькантара
+        material_uz: Teri + alkantara
+        photo: classic.jpg
+        tags: [Chevrolet, Спорт]
+        time: 1.5–2 часа
+        time_uz: 1.5–2 soat
+        stock: order # под заказ, срок уточняет менеджер
+        flags: { carbon: false, has_led: false, has_paddles: false }
+        default_config:
+          { leather: black, stitch: red, insert: alcantara, mark: none, led: "off", paddles: "off" }
+
+  # ────────────────────────────────────────────────────────── МАГНИТОЛА
+  - id: audio
+    label: Магнитола
+    label_uz: Magnitola
+    photo: audio.jpg
+    noun: магнитола
+    noun_cap: Магнитола
+    noun_cap_uz: Magnitola
+    acc: магнитолу
+    title: Магнитолы
+    title_uz: Magnitolalar
+    sub: Android-экраны с CarPlay и камерами.
+    sub_uz: CarPlay va kameralari bilan Android-ekranlar.
+    shoot_title: Сфотографируйте магнитолу
+    shoot_title_uz: Magnitolani suratga oling
+    pick_sub: Android, CarPlay
+    pick_sub_uz: Android, CarPlay
+    gen_steps:
+      - Находим штатную магнитолу
+      - Измеряем проём и перспективу
+      - Устанавливаем новый экран
+      - Подстраиваем блики и подсветку
+      - Проверяем результат
+    gen_steps_uz:
+      - Standart magnitolani topamiz
+      - Oʻrin va perspektivani oʻlchaymiz
+      - Yangi ekranni oʻrnatamiz
+      - Yaltirash va yoritishni moslaymiz
+      - Natijani tekshiramiz
+    option_groups:
+      - id: size
+        label: Диагональ
+        label_uz: Diagonal
+        type: segment
+        default: s9
+        choices:
+          - { id: s9, label: 9", price_delta: 0 }
+          - { id: s10, label: 10", price_delta: 400000 }
+          - { id: s13, label: 13", price_delta: 1200000 }
+      - id: carplay
+        label: Apple CarPlay / Android Auto
+        label_uz: Apple CarPlay / Android Auto
+        type: toggle
+        default: "off"
+        ui: switch
+        choices:
+          - { id: "on", label: Apple CarPlay / Android Auto, price_delta: 350000 }
+    products:
+      - id: au1
+        category: audio
+        name: Teyes CC3 2K
+        base_price: 3200000
+        material: 2K IPS
+        material_uz: 2K IPS
+        tags: [2K, Android 12]
+        time: 3 часа
+        time_uz: 3 soat
+        stock: in
+        popular: true
+      - id: au2
+        category: audio
+        name: Roximo RX
+        base_price: 2400000
+        material: IPS
+        material_uz: IPS
+        tags: [Android]
+        time: 2–3 часа
+        time_uz: 2–3 soat
+        stock: in
+      - id: au3
+        category: audio
+        name: Pioneer AVH
+        base_price: 2900000
+        material: Мультимедиа
+        material_uz: Multimediya
+        tags: [Pioneer]
+        time: 3 часа
+        time_uz: 3 soat
+        stock: order
+
+  # ────────────────────────────────────────────────────────── БАМПЕР ПЕРЕДНИЙ
+  - id: bumperF
+    label: Передний бампер
+    label_uz: Old bamper
+    photo: bumperF.jpg
+    noun: передний бампер
+    noun_cap: Передний бампер
+    noun_cap_uz: Old bamper
+    acc: передний бампер
+    title: Передние бамперы
+    title_uz: Old bamperlar
+    sub: Обвесы и решётки с покраской в цвет кузова.
+    sub_uz: Kuzov rangiga boʻyalgan obves va panjaralar.
+    shoot_title: Сфотографируйте передний бампер
+    shoot_title_uz: Old bamperni suratga oling
+    pick_sub: Обвес, покраска
+    pick_sub_uz: Obves, boʻyash
+    gen_steps:
+      - Определяем контур штатного бампера
+      - Настраиваем геометрию и перспективу
+      - Добавляем выбранный обвес
+      - Подбираем цвет и блики
+      - Проверяем результат
+    gen_steps_uz:
+      - Standart bamper konturini aniqlaymiz
+      - Geometriya va perspektivani sozlaymiz
+      - Tanlangan obvesni qoʻshamiz
+      - Rang va yaltirashni tanlaymiz
+      - Natijani tekshiramiz
+    option_groups:
+      - id: paint
+        label: Покраска
+        label_uz: Boʻyash
+        type: segment
+        default: primer
+        choices:
+          - { id: body, label: В цвет кузова, label_uz: Kuzov rangiga, price_delta: 900000 }
+          - { id: matte, label: Чёрный мат, label_uz: Qora mat, price_delta: 400000 }
+          - { id: primer, label: Грунт, label_uz: Grunt, price_delta: 0 }
+      - id: pdc
+        label: Сохранить парктроники
+        label_uz: Parktroniklarni saqlash
+        type: toggle
+        default: "off"
+        ui: switch
+        choices:
+          - { id: "on", label: Сохранить парктроники, label_uz: Parktroniklarni saqlash, price_delta: 250000 }
+    products:
+      - id: bf1
+        category: bumperF
+        name: Sport Line Front
+        base_price: 2000000
+        material: ABS-пластик
+        material_uz: ABS-plastik
+        tags: [Спорт]
+        time: 4 часа
+        time_uz: 4 soat
+        stock: in
+        popular: true
+      - id: bf2
+        category: bumperF
+        name: GT Wide Front
+        base_price: 2600000
+        material: Полиуретан
+        material_uz: Poliuretan
+        tags: [GT, Широкий]
+        time: 5 часов
+        time_uz: 5 soat
+        stock: in
+
+  # ────────────────────────────────────────────────────────── БАМПЕР ЗАДНИЙ
+  - id: bumperR
+    label: Задний бампер
+    label_uz: Orqa bamper
+    photo: bumperR.jpg
+    noun: задний бампер
+    noun_cap: Задний бампер
+    noun_cap_uz: Orqa bamper
+    acc: задний бампер
+    title: Задние бамперы
+    title_uz: Orqa bamperlar
+    sub: Диффузоры и накладки с покраской.
+    sub_uz: Boʻyalgan diffuzor va qoplamalar.
+    shoot_title: Сфотографируйте задний бампер
+    shoot_title_uz: Orqa bamperni suratga oling
+    pick_sub: Диффузор, покраска
+    pick_sub_uz: Diffuzor, boʻyash
+    gen_steps:
+      - Определяем контур штатного бампера
+      - Настраиваем геометрию и перспективу
+      - Добавляем выбранный обвес
+      - Подбираем цвет и блики
+      - Проверяем результат
+    gen_steps_uz:
+      - Standart bamper konturini aniqlaymiz
+      - Geometriya va perspektivani sozlaymiz
+      - Tanlangan obvesni qoʻshamiz
+      - Rang va yaltirashni tanlaymiz
+      - Natijani tekshiramiz
+    option_groups:
+      - id: paint
+        label: Покраска
+        label_uz: Boʻyash
+        type: segment
+        default: primer
+        choices:
+          - { id: body, label: В цвет кузова, label_uz: Kuzov rangiga, price_delta: 900000 }
+          - { id: matte, label: Чёрный мат, label_uz: Qora mat, price_delta: 400000 }
+          - { id: primer, label: Грунт, label_uz: Grunt, price_delta: 0 }
+      - id: diff
+        label: Диффузор
+        label_uz: Diffuzor
+        type: toggle
+        default: "off"
+        ui: switch
+        choices:
+          - { id: "on", label: Диффузор, label_uz: Diffuzor, price_delta: 500000 }
+    products:
+      - id: br1
+        category: bumperR
+        name: Sport Line Rear
+        base_price: 2200000
+        material: ABS-пластик
+        material_uz: ABS-plastik
+        tags: [Спорт]
+        time: 4 часа
+        time_uz: 4 soat
+        stock: in
+        popular: true
+      - id: br2
+        category: bumperR
+        name: GT Diffuser Rear
+        base_price: 2400000
+        material: Полиуретан
+        material_uz: Poliuretan
+        tags: [GT, Диффузор]
+        time: 5 часов
+        time_uz: 5 soat
+        stock: in
+
+  # ────────────────────────────────────────────────────────── КАМЕРА ПЕРЕДНЯЯ
+  - id: camF
+    label: Передняя камера
+    label_uz: Old kamera
+    photo: camF.jpg
+    noun: передняя камера
+    noun_cap: Передняя камера
+    noun_cap_uz: Old kamera
+    acc: переднюю камеру
+    title: Передние камеры
+    title_uz: Old kameralar
+    sub: HD и Full HD с ночным режимом.
+    sub_uz: Tungi rejimli HD va Full HD.
+    shoot_title: Сфотографируйте решётку радиатора
+    shoot_title_uz: Radiator panjarasini suratga oling
+    pick_sub: HD, ночной режим
+    pick_sub_uz: HD, tungi rejim
+    gen_steps:
+      - Находим место установки
+      - Настраиваем размер и перспективу
+      - Добавляем камеру
+      - Подстраиваем освещение
+      - Проверяем результат
+    gen_steps_uz:
+      - Oʻrnatish joyini topamiz
+      - Oʻlcham va perspektivani sozlaymiz
+      - Kamerani qoʻshamiz
+      - Yoritishni moslaymiz
+      - Natijani tekshiramiz
+    option_groups:
+      - id: q
+        label: Качество
+        label_uz: Sifat
+        type: segment
+        default: hd
+        choices:
+          - { id: hd, label: HD, price_delta: 0 }
+          - { id: fhd, label: Full HD, price_delta: 300000 }
+      - id: night
+        label: Ночной режим
+        label_uz: Tungi rejim
+        type: toggle
+        default: "off"
+        ui: switch
+        choices:
+          - { id: "on", label: Ночной режим, label_uz: Tungi rejim, price_delta: 200000 }
+      - id: lines
+        label: Динамические линии
+        label_uz: Dinamik chiziqlar
+        type: toggle
+        default: "off"
+        ui: switch
+        choices:
+          - { id: "on", label: Динамические линии, label_uz: Dinamik chiziqlar, price_delta: 250000 }
+    products:
+      - id: cf1
+        category: camF
+        name: FrontEye HD
+        base_price: 600000
+        material: HD
+        material_uz: HD
+        tags: [HD]
+        time: 2 часа
+        time_uz: 2 soat
+        stock: in
+        popular: true
+      - id: cf2
+        category: camF
+        name: FrontEye Pro
+        base_price: 900000
+        material: Full HD
+        material_uz: Full HD
+        tags: [Full HD, Ночь]
+        time: 2–3 часа
+        time_uz: 2–3 soat
+        stock: in
+
+  # ────────────────────────────────────────────────────────── КАМЕРА ЗАДНЯЯ
+  - id: camR
+    label: Задняя камера
+    label_uz: Orqa kamera
+    photo: camR.jpg
+    noun: задняя камера
+    noun_cap: Задняя камера
+    noun_cap_uz: Orqa kamera
+    acc: заднюю камеру
+    title: Задние камеры
+    title_uz: Orqa kameralar
+    sub: Парковочные камеры с разметкой.
+    sub_uz: Chiziqli parkovka kameralari.
+    shoot_title: Сфотографируйте заднюю часть автомобиля
+    shoot_title_uz: Avtomobilning orqa qismini suratga oling
+    pick_sub: Парковка, разметка
+    pick_sub_uz: Parkovka, chiziqlar
+    gen_steps:
+      - Находим место установки
+      - Настраиваем размер и перспективу
+      - Добавляем камеру
+      - Подстраиваем освещение
+      - Проверяем результат
+    gen_steps_uz:
+      - Oʻrnatish joyini topamiz
+      - Oʻlcham va perspektivani sozlaymiz
+      - Kamerani qoʻshamiz
+      - Yoritishni moslaymiz
+      - Natijani tekshiramiz
+    option_groups:
+      - id: q
+        label: Качество
+        label_uz: Sifat
+        type: segment
+        default: hd
+        choices:
+          - { id: hd, label: HD, price_delta: 0 }
+          - { id: fhd, label: Full HD, price_delta: 300000 }
+      - id: night
+        label: Ночной режим
+        label_uz: Tungi rejim
+        type: toggle
+        default: "off"
+        ui: switch
+        choices:
+          - { id: "on", label: Ночной режим, label_uz: Tungi rejim, price_delta: 200000 }
+      - id: lines
+        label: Динамические линии
+        label_uz: Dinamik chiziqlar
+        type: toggle
+        default: "off"
+        ui: switch
+        choices:
+          - { id: "on", label: Динамические линии, label_uz: Dinamik chiziqlar, price_delta: 250000 }
+    products:
+      - id: cr1
+        category: camR
+        name: RearView HD
+        base_price: 700000
+        material: HD
+        material_uz: HD
+        tags: [HD]
+        time: 2 часа
+        time_uz: 2 soat
+        stock: in
+        popular: true
+      - id: cr2
+        category: camR
+        name: RearView 360
+        base_price: 1100000
+        material: Full HD
+        material_uz: Full HD
+        tags: [Full HD, Разметка]
+        time: 3 часа
+        time_uz: 3 soat
+        stock: in
+
+  # ────────────────────────────────────────────────────────── ПАРКТРОНИКИ
+  - id: park
+    label: Парктроники
+    label_uz: Parktroniklar
+    photo: park.jpg
+    noun: парктроники
+    noun_cap: Парктроники
+    noun_cap_uz: Parktroniklar
+    acc: парктроники
+    title: Парктроники
+    title_uz: Parktroniklar
+    sub: 4, 6 или 8 датчиков с дисплеем.
+    sub_uz: Displeyli 4, 6 yoki 8 datchik.
+    shoot_title: Сфотографируйте бампер с парктрониками
+    shoot_title_uz: Parktronikli bamperni suratga oling
+    pick_sub: 4–8 датчиков
+    pick_sub_uz: 4–8 datchik
+    gen_steps:
+      - Определяем зону установки
+      - Размечаем положение датчиков
+      - Добавляем парктроники
+      - Подбираем цвет под бампер
+      - Проверяем результат
+    gen_steps_uz:
+      - Oʻrnatish zonasini aniqlaymiz
+      - Datchiklar joyini belgilaymiz
+      - Parktroniklarni qoʻshamiz
+      - Bamperga mos rang tanlaymiz
+      - Natijani tekshiramiz
+    option_groups:
+      - id: sensors
+        label: Количество датчиков
+        label_uz: Datchiklar soni
+        type: segment
+        default: s4
+        choices:
+          - { id: s4, label: 4 датчика, label_uz: 4 datchik, price_delta: 0 }
+          - { id: s6, label: 6 датчиков, label_uz: 6 datchik, price_delta: 400000 }
+          - { id: s8, label: 8 датчиков, label_uz: 8 datchik, price_delta: 800000 }
+      - id: display
+        label: Дисплей
+        label_uz: Displey
+        type: toggle
+        default: "off"
+        ui: switch
+        choices:
+          - { id: "on", label: Дисплей, label_uz: Displey, price_delta: 300000 }
+    products:
+      - id: pk1
+        category: park
+        name: ProSense
+        base_price: 750000
+        material: Ультразвук
+        material_uz: Ultratovush
+        tags: [4 датчика]
+        time: 2–3 часа
+        time_uz: 2–3 soat
+        stock: in
+        popular: true
+      - id: pk2
+        category: park
+        name: Vision Park
+        base_price: 1200000
+        material: Ультразвук + дисплей
+        material_uz: Ultratovush + displey
+        tags: [Дисплей]
+        time: 3 часа
+        time_uz: 3 soat
+        stock: order
