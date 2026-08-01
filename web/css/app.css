@@ -199,6 +199,16 @@ p{margin:0 0 12px;font-size:14px;line-height:1.45;color:var(--muted)}
 /* A lone last action (odd count) spans the full width instead of sitting half-empty. */
 .racts .ract:last-child:nth-child(odd){grid-column:1 / -1}
 
+/* ── Payment-method selector (booking form) ────────────────── */
+.payopts{display:flex;flex-direction:column;gap:8px}
+.payopt{display:flex;align-items:center;gap:11px;background:var(--card2);border:1px solid transparent;
+  color:var(--muted);border-radius:var(--r-md);padding:12px 13px;font-size:14px;cursor:pointer;
+  text-align:left;transition:background .12s,color .12s,border-color .12s}
+.payopt svg{color:var(--muted2);flex:none;transition:color .12s}
+.payopt:hover{color:var(--txt)}
+.payopt.on{background:var(--blueSoft);border-color:rgba(59,130,246,.5);color:#cfe0ff}
+.payopt.on svg{color:var(--blue)}
+
 /* ── Chips & options ───────────────────────────────────────── */
 .chips{display:flex;flex-wrap:wrap;gap:7px}
 .chip{border:1px solid var(--line);background:var(--bg2);color:var(--muted);border-radius:var(--r-pill);

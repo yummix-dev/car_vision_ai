@@ -207,11 +207,18 @@ const MESSAGES = {
     "request.submit": "Отправить заявку",
     "request.need_phone": "Укажите номер телефона",
 
+    // ── payment method ──
+    "pay.title": "Способ оплаты",
+    "pay.cash": "Наличными при установке",
+    "pay.telegram": "Картой в Telegram",
+    "pay.uzum": "Рассрочка Uzum",
+
     // ── success ──
     "success.title": "Заявка отправлена",
     "success.sub": "Менеджер свяжется с вами, подтвердит совместимость, стоимость и удобное время установки.",
     "success.car": "Автомобиль",
     "success.positions": "Позиций",
+    "success.payment": "Оплата",
     "success.total": "Итого",
     "success.booking_no": "заявка №",
     "success.manager": "Написать менеджеру",
@@ -464,10 +471,17 @@ const MESSAGES = {
     "request.submit": "Arizani yuborish",
     "request.need_phone": "Telefon raqamini kiriting",
 
+    // ── payment method ──
+    "pay.title": "Toʻlov usuli",
+    "pay.cash": "Oʻrnatishda naqd",
+    "pay.telegram": "Telegramda karta bilan",
+    "pay.uzum": "Uzum boʻlib toʻlash",
+
     "success.title": "Ariza yuborildi",
     "success.sub": "Menejer siz bilan bogʻlanadi, moslik, narx va qulay oʻrnatish vaqtini tasdiqlaydi.",
     "success.car": "Avtomobil",
     "success.positions": "Pozitsiyalar",
+    "success.payment": "Toʻlov",
     "success.total": "Jami",
     "success.booking_no": "ariza №",
     "success.manager": "Menejerga yozish",

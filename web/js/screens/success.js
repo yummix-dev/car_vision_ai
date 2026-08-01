@@ -19,6 +19,7 @@ export function body() {
       <div class="price">
         <div class="pl"><span>${t("success.car")}</span><span>${esc(b?.car_label || state.carLabel)}</span></div>
         <div class="pl"><span>${t("success.positions")}</span><span>${b?.positions ?? state.cart.length}</span></div>
+        ${b?.payment_method ? `<div class="pl"><span>${t("success.payment")}</span><span>${t("pay." + b.payment_method)}</span></div>` : ""}
         <div class="total"><span class="micro">${t("success.total")}</span>
           <span class="num">${esc(b?.total_formatted || "0")} ${t("ui.currency")}</span></div>
       </div>

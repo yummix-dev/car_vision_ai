@@ -41,6 +41,15 @@ class Settings(BaseSettings):
     telegram_auth_max_age_seconds: int = 86400
     telegram_timeout_seconds: float = 15.0
 
+    # Payments. All empty by default: the customer's chosen method is captured on
+    # the order and routed to the manager, and nothing is charged online until a
+    # provider is configured. Then card pay (Telegram Payments) and Uzum Nasiya
+    # installments go live without a client change — see app/services/payments.py.
+    telegram_payment_provider_token: str = ""  # BotFather → connect Click/Payme
+    payment_currency: str = "UZS"
+    uzum_merchant_id: str = ""
+    uzum_api_key: str = ""
+
     # Analytics. Empty ADMIN_PASSWORD does not mean "open" — it means the
     # /admin route is never registered at all.
     admin_password: str = ""

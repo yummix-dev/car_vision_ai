@@ -4,11 +4,11 @@ import uuid
 from fastapi import APIRouter, Depends, Header, HTTPException
 
 from app.i18n import lang_of, t
-from app.models.cart import BookingRequest, BookingResponse
+from app.models.cart import BookingRequest, BookingResponse, PaymentAction
 from app.models.telegram import TelegramUser
 from app.money import fmt
 from app.routers.deps import telegram_user
-from app.services import analytics
+from app.services import analytics, orders, payments
 from app.services.pricing_service import PricingError, quote
 from app.services.telegram import (
     ManagerNotifyError,
@@ -21,11 +21,17 @@ log = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api", tags=["booking"])
 
-# There is deliberately no booking store. The manager's Telegram chat is the
-# system of record; a dict here was written and never read by anything but its
-# own tests, and putting it in a database would only have made that durable.
-# Analytics gets the fact and the amount — never the name or the phone, which
-# stay in the one place that needs them.
+# The order is now persisted (payments need something to reconcile against — see
+# migration 009), but only the transaction: the name and phone still live only in
+# the manager's chat, never in the database or analytics.
+
+# The manager's copy of the chosen payment method, in Russian (the manager reads
+# Russian). The customer picks it in their own language on the client.
+_PAYMENT_LABELS = {
+    "cash": "Наличными при установке",
+    "telegram": "Картой в Telegram",
+    "uzum": "Рассрочка Uzum",
+}
 
 
 @router.post("/booking")
@@ -62,38 +68,55 @@ async def create_booking(
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     booking_id = uuid.uuid4().hex[:10]
+    method = req.payment_method
 
-    # Deliver before confirming: a booking the shop never received must not come
-    # back as "заявка отправлена". On an unconfigured dev box there is nowhere to
-    # deliver to, and the funnel stays walkable — the warning is the signal.
-    if delivery_configured():
-        try:
-            await notify_manager(
-                render_booking_message(
-                    booking_id=booking_id,
-                    car_label=req.car_label,
-                    lines=lines,
-                    total_formatted=fmt(total),
-                    contact=req.contact.model_dump(),
-                    user=user,
+    # Persist the order before charging: an online method (Phase 2) starts as
+    # "pending" and is confirmed by a webhook; an offline/manager method is
+    # "manual" — the manager arranges payment, exactly as the shop does today.
+    order = orders.create(
+        order_code=booking_id,
+        telegram_id=user.id if user else None,
+        car_label=req.car_label,
+        positions=len(req.cart),
+        total=total,
+        payment_method=method,
+        payment_status="pending" if payments.is_online(method) else "manual",
+    )
+    action = payments.initiate(order, method)
+
+    # The manager is notified now for anything they handle (cash, or an online
+    # method with no provider configured yet). A live online payment instead
+    # notifies after the webhook confirms it, so nobody chases an unpaid order.
+    if action["kind"] == "manager":
+        if delivery_configured():
+            try:
+                await notify_manager(
+                    render_booking_message(
+                        booking_id=booking_id,
+                        car_label=req.car_label,
+                        lines=lines,
+                        total_formatted=fmt(total),
+                        contact=req.contact.model_dump(),
+                        user=user,
+                        payment_label=_PAYMENT_LABELS.get(method, method),
+                    )
                 )
+            except ManagerNotifyError as exc:
+                raise HTTPException(
+                    status_code=502,
+                    detail=t("err.booking_failed", lang),
+                ) from exc
+        else:
+            log.warning(
+                "Booking %s not delivered: TELEGRAM_BOT_TOKEN/"
+                "TELEGRAM_MANAGER_CHAT_ID are unset",
+                booking_id,
             )
-        except ManagerNotifyError as exc:
-            raise HTTPException(
-                status_code=502,
-                detail=t("err.booking_failed", lang),
-            ) from exc
-    else:
-        log.warning(
-            "Booking %s not delivered: TELEGRAM_BOT_TOKEN/"
-            "TELEGRAM_MANAGER_CHAT_ID are unset",
-            booking_id,
-        )
 
     analytics.record_server_event(
         "booking_submitted",
         session_id=x_session_id or "server",
-        payload={"total": total, "positions": len(req.cart)},
+        payload={"total": total, "positions": len(req.cart), "payment_method": method},
     )
 
     return BookingResponse(
@@ -103,4 +126,6 @@ async def create_booking(
         total=total,
         total_formatted=fmt(total),
         car_label=req.car_label,
+        payment_method=method,
+        payment=PaymentAction(**action),
     )

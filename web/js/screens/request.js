@@ -1,5 +1,6 @@
 import { api } from "../api.js";
 import { t } from "../i18n.js";
+import { icon } from "../icons.js";
 import { cartTotal, nav, setQuiet, setState, state } from "../state.js";
 import { tg } from "../tg.js";
 import { esc } from "../ui.js";
@@ -10,6 +11,12 @@ const FIELDS = [
   ["phone", "request.f_phone", "tel", "+998 __ ___ __ __"],
   ["telegram", "request.f_tg", "text", "@username"],
   ["date", "request.f_date", "text", "request.f_date_ph"],
+];
+
+const PAY_METHODS = [
+  ["cash", "wallet", "pay.cash"],
+  ["telegram", "card", "pay.telegram"],
+  ["uzum", "percent", "pay.uzum"],
 ];
 
 export function body() {
@@ -35,6 +42,14 @@ export function body() {
       </div>
     </div>
 
+    <label class="micro" style="display:block;margin-bottom:8px">${t("pay.title")}</label>
+    <div class="payopts" style="margin-bottom:16px">
+      ${PAY_METHODS.map(
+        ([id, ic, label]) => `<button class="payopt ${state.paymentMethod === id ? "on" : ""}"
+          data-act="setPay" data-id="${id}">${icon(ic, 18)}<span>${t(label)}</span></button>`
+      ).join("")}
+    </div>
+
     ${fields}
     <div class="field">
       <label class="micro">${t("request.f_comment")}</label>
@@ -52,6 +67,8 @@ export const bar = () =>
   `<button class="cta" data-act="submit">${t("request.submit")}</button>`;
 
 export const actions = {
+  setPay: (_ev, el) => setState({ paymentMethod: el.dataset.id }),
+
   submit: async () => {
     if (!state.form.phone.trim()) {
       setState({ formError: t("request.need_phone") });
@@ -69,8 +86,15 @@ export const actions = {
         })),
         contact: state.form,
         car_label: state.carLabel,
+        payment_method: state.paymentMethod,
       });
       setState({ booking, formError: "" });
+      // A live provider (Phase 2) hands back an invoice/redirect to open; today
+      // every method returns "manager", so we go straight to the confirmation.
+      const action = booking.payment || { kind: "manager" };
+      if ((action.kind === "invoice" || action.kind === "redirect") && action.url) {
+        window.open(action.url, "_blank"); // Phase 2: tg.openInvoice for invoices
+      }
       nav("success");
     } catch (e) {
       setState({ formError: e.message });

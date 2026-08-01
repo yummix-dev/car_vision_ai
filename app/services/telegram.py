@@ -119,6 +119,7 @@ def render_booking_message(
     total_formatted: str,
     contact: dict,
     user: TelegramUser | None,
+    payment_label: str = "",
 ) -> str:
     """The manager's copy of a booking. Everything they need to call back."""
     rows = [
@@ -129,6 +130,10 @@ def render_booking_message(
         *(f"• {_escape(line)}" for line in lines),
         "",
         f"<b>Итого: {_escape(total_formatted)} сум</b>",
+    ]
+    if payment_label:
+        rows.append(f"Оплата: {_escape(payment_label)}")
+    rows += [
         "",
         "<b>Контакты</b>",
         f"Имя: {_escape(contact.get('name') or '—')}",

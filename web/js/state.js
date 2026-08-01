@@ -77,6 +77,7 @@ export const state = {
 
   cart: [],
   form: { name: "", phone: "", telegram: "", date: "", comment: "" },
+  paymentMethod: "cash", // cash | telegram | uzum
   booking: null,
 
   // gallery ("Мои примерки") — null until loaded on entry
