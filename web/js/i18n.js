@@ -148,6 +148,19 @@ const MESSAGES = {
     "result.add_to_cart": "Добавить в корзину",
     "result.note": "AI-визуализация является предварительной. Итоговый вид может немного отличаться из-за освещения, ракурса и особенностей автомобиля.",
     "result.share_denied": "Без разрешения бот не сможет прислать изображение.",
+    "result.compare": "Сравнить",
+
+    // ── compare (side-by-side) ──
+    "compare.title": "Сравнение",
+    "compare.lede": "Оба варианта на вашей машине — выбирайте, что нравится.",
+    "compare.pick_title": "С чем сравнить?",
+    "compare.pick_sub": "Второй товар примерим на том же фото.",
+    "compare.cancel": "Отмена",
+    "compare.a": "Вариант A",
+    "compare.b": "Вариант B",
+    "compare.choose": "Выбрать этот",
+    "compare.note": "Сравнение предварительное. Итоговый вид может немного отличаться.",
+    "compare.none": "Нет данных для сравнения.",
 
     // ── gallery ("Мои примерки") ──
     "gallery.title": "Мои примерки",
@@ -395,6 +408,19 @@ const MESSAGES = {
     "result.add_to_cart": "Savatga qoʻshish",
     "result.note": "AI vizualizatsiya taxminiy. Yakuniy koʻrinish yoritish, rakurs va avtomobil xususiyatlariga qarab biroz farq qilishi mumkin.",
     "result.share_denied": "Ruxsatsiz bot rasmni yubora olmaydi.",
+    "result.compare": "Solishtirish",
+
+    // ── compare (side-by-side) ──
+    "compare.title": "Solishtirish",
+    "compare.lede": "Ikkala variant sizning mashinangizda — qaysi biri yoqsa, tanlang.",
+    "compare.pick_title": "Nima bilan solishtiramiz?",
+    "compare.pick_sub": "Ikkinchi mahsulotni xuddi shu suratda primerka qilamiz.",
+    "compare.cancel": "Bekor qilish",
+    "compare.a": "A variant",
+    "compare.b": "B variant",
+    "compare.choose": "Shuni tanlash",
+    "compare.note": "Solishtirish taxminiy. Yakuniy koʻrinish biroz farq qilishi mumkin.",
+    "compare.none": "Solishtirish uchun maʼlumot yoʻq.",
 
     // ── gallery ("Mening primerkalarim") ──
     "gallery.title": "Mening primerkalarim",

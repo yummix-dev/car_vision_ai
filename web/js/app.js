@@ -21,10 +21,11 @@ import * as referral from "./screens/referral.js";
 import * as lang from "./screens/lang.js";
 import * as gallery from "./screens/gallery.js";
 import * as showcase from "./screens/showcase.js";
+import * as compare from "./screens/compare.js";
 
 const SCREENS = {
   lang, flow, home, example, pick, upload, car,
-  catalog, config, generating, result, cart, request, success, referral, gallery, showcase,
+  catalog, config, generating, result, cart, request, success, referral, gallery, showcase, compare,
 };
 
 const $hdr = document.getElementById("hdr");

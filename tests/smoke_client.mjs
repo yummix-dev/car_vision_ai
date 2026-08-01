@@ -36,7 +36,7 @@ const { setLang } = await load("i18n.js");
 const SCREEN_NAMES = [
   "lang", "flow", "home", "example", "pick", "upload", "car", "catalog",
   "config", "generating", "result", "cart", "request", "success",
-  "referral", "gallery", "showcase",
+  "referral", "gallery", "showcase", "compare",
 ];
 const screens = {};
 for (const n of SCREEN_NAMES) screens[n] = await load(`screens/${n}.js`);
@@ -125,6 +125,12 @@ function seedState() {
     showcase: [{ id: 1, car_model: "Malibu", car_label: "Chevrolet Malibu 2023", category_id: "rul",
       category_label: "Руль", title: "Руль Mercedes-AMG", before_url: "/media/b.jpg", after_url: "/media/a.jpg" }],
     showcaseFilter: "",
+    compareBase: {
+      productId: "rs", selections: {},
+      job: { job_id: "j0", after_url: "/media/a0.jpg", before_url: "/media/b.jpg" },
+      breakdown: { product_name: "Carbon RS", total: 6900000, total_formatted: "6 900 000", lines: [] },
+    },
+    comparePickOpen: false, comparing: false,
     cart: [{ uid: "x1", productId: "amg", categoryLabel: "Руль", name: product.name, time: "2–3 часа",
       total: 6650000, selections: { leather: "black" }, serviceIds: [1], serviceLines: ["Установка"],
       chips: ["LED-подсветка"], image: "/media/a.jpg" }],
@@ -162,6 +168,8 @@ for (lang of ["ru", "uz"]) {
 
   // Gated overlays and alternate states.
   state.zoomOpen = true; run("result.overlay(zoom open)", () => screens.result.overlay());
+  state.comparePickOpen = true; run("result.overlay(compare pick)", () => screens.result.overlay());
+  state.comparePickOpen = false;
   state.galleryView = state.gallery[0];
   run("gallery.overlay(view)", () => screens.gallery.overlay());
   state.galleryConfirmDelete = true;

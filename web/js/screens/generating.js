@@ -95,7 +95,10 @@ export function bar() {
 
 export const actions = {
   retry: () => {
-    setState({ photoSource: "", photoId: null, photoUrl: null, job: null, jobId: null });
+    setState({
+      photoSource: "", photoId: null, photoUrl: null, job: null, jobId: null,
+      comparing: false, compareBase: null,
+    });
     nav("upload");
   },
 };
@@ -151,7 +154,8 @@ async function poll() {
       setQuiet({ job }); // result reads state.job; no need to rebuild this screen
       // Replace rather than push, so Back from the result skips this screen.
       await new Promise((r) => setTimeout(r, 350));
-      replace("result");
+      // A compare run lands on the side-by-side screen instead of the result.
+      replace(state.comparing ? "compare" : "result");
       return;
     }
     if (job.status === "error") {

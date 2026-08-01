@@ -90,6 +90,12 @@ export const state = {
   showcase: null,
   showcaseError: "",
   showcaseFilter: "", // "" = all car models
+
+  // side-by-side compare — a snapshot of the first result to compare against,
+  // and a flag so the generation of the second variant routes to `compare`
+  compareBase: null,
+  comparing: false,
+  comparePickOpen: false,
 };
 
 const listeners = new Set();
@@ -191,6 +197,7 @@ const BACK_TARGET = {
   config: () => "catalog",
   generating: () => "config",
   result: () => "config",
+  compare: () => "result",
   cart: () => state.cartReturn || "home",
   request: () => "cart",
   success: () => null, // a submitted booking is done — no way back into it

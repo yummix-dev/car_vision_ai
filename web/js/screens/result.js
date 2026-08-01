@@ -2,11 +2,13 @@ import { track } from "../analytics.js";
 import { api } from "../api.js";
 import { t } from "../i18n.js";
 import { icon } from "../icons.js";
+import { fmt } from "../money.js";
 import {
   back,
   carLabelShort,
   currentCategory,
   currentProduct,
+  defaultSelections,
   nav,
   setState,
   state,
@@ -39,6 +41,10 @@ export function body() {
     ["edit", "rotate", t("result.edit")],
     ["save", "save", state.saved ? t("result.saved") : t("result.save")],
   ];
+  // Compare only makes sense when the section has another product to try.
+  if ((cat?.products?.length || 0) > 1) {
+    buttons.push(["openCompare", "compare", t("result.compare")]);
+  }
   // Sharing needs Telegram: the bot delivers the image into the user's own
   // chat. Nothing to fall back to in a browser, so the button is not offered.
   if (tg.canShare) {
@@ -96,8 +102,37 @@ export function body() {
     <div class="note">${t("result.note")}</div>`;
 }
 
+/** The bottom sheet for picking the second product to compare against. */
+function comparePickSheet() {
+  const cat = currentCategory();
+  const rows = (cat?.products || [])
+    .filter((p) => p.id !== state.productId)
+    .map(
+      (p) => `<button class="btn" data-act="pickCompare" data-id="${esc(p.id)}"
+        style="width:100%;text-align:left;padding:10px;margin-top:8px;display:flex;align-items:center;gap:12px">
+        <span style="width:56px;height:42px;border-radius:8px;flex:none;background:#131922 ${
+          p.photo ? `center/cover url('/img/products/${esc(p.photo)}')` : ""
+        }"></span>
+        <span style="flex:1;min-width:0">
+          <span style="display:block;font-size:14px;font-weight:600">${esc(p.name)}</span>
+          <span class="mut2" style="font-size:12px">${fmt(p.base_price)} ${t("ui.currency")}</span>
+        </span></button>`
+    )
+    .join("");
+  return `
+    <div class="sheet-back" data-act="closeCompare"></div>
+    <div class="sheet">
+      <div class="sheet-grip"></div>
+      <h3 style="margin:0 0 2px">${t("compare.pick_title")}</h3>
+      <div class="mut2" style="font-size:12.5px;margin-bottom:6px">${t("compare.pick_sub")}</div>
+      ${rows}
+      <button class="cta sec" data-act="closeCompare" style="margin-top:14px">${t("compare.cancel")}</button>
+    </div>`;
+}
+
 /** Full-screen before/after, reusing the same slider component as the card. */
 export function overlay() {
+  if (state.comparePickOpen) return comparePickSheet();
   if (!state.zoomOpen) return "";
   const job = state.job || {};
   return `
@@ -128,6 +163,39 @@ export const actions = {
   closeZoom: () => setState({ zoomOpen: false }),
   another: () => nav("pick"),
   edit: () => back(),
+
+  openCompare: () => setState({ comparePickOpen: true }),
+  closeCompare: () => setState({ comparePickOpen: false }),
+
+  // Pick a second product and render it on the SAME photo, then land on the
+  // compare screen. A snapshot of the current result is kept as the baseline.
+  pickCompare: (_ev, el) => {
+    const cat = currentCategory();
+    const b = cat?.products.find((p) => p.id === el.dataset.id);
+    if (!b) return;
+    track("compare_started", { category_id: cat.id, product_id: b.id });
+    setState({
+      compareBase: {
+        productId: state.productId,
+        selections: { ...state.selections },
+        job: state.job,
+        breakdown: state.breakdown,
+      },
+      comparePickOpen: false,
+      comparing: true,
+      productId: b.id,
+      selections: defaultSelections(cat, b),
+      breakdown: null,
+      jobId: null,
+      job: null,
+      // A fresh idempotency key, or the server would return the first render.
+      generationKey: `cmp-${b.id}-${Date.now()}`,
+      saved: false,
+      shared: false,
+      resultError: "",
+    });
+    nav("generating");
+  },
 
   save: async () => {
     const url = state.job?.after_url;

@@ -221,6 +221,8 @@ function startGeneration() {
   setState({
     jobId: null, job: null, saved: false, shared: false, sharing: false,
     resultError: "", zoomOpen: false, resultSlider: 50, zoomSlider: 50,
+    // A normal generation is not a compare run — clear any stale compare state.
+    comparing: false, compareBase: null,
     // One key per attempt: a double tap reuses it and is charged once.
     generationKey: `${state.productId}-${Date.now()}`,
   });
