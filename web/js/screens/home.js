@@ -13,9 +13,13 @@ export function body() {
     .join("");
 
   return `
-    <div class="row" style="justify-content:space-between;margin-bottom:2px">
-      <button class="btn" style="font-size:12.5px;padding:5px 11px" data-act="openGallery">
-        ${icon("gallery", 14)} ${t("home.gallery")}</button>
+    <div class="row" style="justify-content:space-between;margin-bottom:2px;gap:6px">
+      <div class="row" style="gap:6px">
+        <button class="btn" style="font-size:12.5px;padding:5px 11px" data-act="openShowcase">
+          ${icon("gallery", 14)} ${t("home.showcase")}</button>
+        <button class="btn" style="font-size:12.5px;padding:5px 11px" data-act="openGallery">
+          ${t("home.gallery")}</button>
+      </div>
       <button class="btn" style="font-size:12.5px;padding:5px 11px" data-act="switchLang">
         ${icon("globe", 14)} ${t("home.lang_switch")}</button>
     </div>
@@ -42,6 +46,7 @@ export const actions = {
   toPick: () => nav("pick"),
   toExample: () => nav("example"),
   openGallery: () => nav("gallery"),
+  openShowcase: () => nav("showcase"),
   // Reopen the language screen; it returns here after a choice.
   switchLang: () => setState({ langReturn: "home", screen: "lang" }),
 };

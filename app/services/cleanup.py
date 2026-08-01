@@ -9,7 +9,7 @@ import logging
 import time
 
 from app.config import get_settings
-from app.services import analytics, gallery, generation_service, photos, quota
+from app.services import analytics, gallery, generation_service, photos, quota, showcase
 
 log = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ def sweep_media() -> int:
     """
     settings = get_settings()
     cutoff = time.time() - settings.media_ttl_days * 86400
-    protected = gallery.protected_photo_ids()
+    protected = gallery.protected_photo_ids() | showcase.protected_photo_ids()
     removed = 0
     for path in settings.media_path.glob("*.*"):
         if path.stem == photos.DEMO_PHOTO_ID or path.stem.startswith(

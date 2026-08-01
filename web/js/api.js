@@ -141,4 +141,7 @@ export const api = {
 
   deleteGalleryItem: (id) =>
     req(`/api/gallery/${encodeURIComponent(id)}`, { method: "DELETE" }),
+
+  // "Реальные сборки" — the shop's public feed of real installs.
+  showcase: () => req("/api/showcase"),
 };

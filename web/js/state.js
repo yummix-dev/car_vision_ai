@@ -85,6 +85,11 @@ export const state = {
   galleryView: null, // the render open in the full-screen overlay
   gallerySlider: 50,
   galleryConfirmDelete: false,
+
+  // showcase ("Реальные сборки") — the shop's public feed, null until loaded
+  showcase: null,
+  showcaseError: "",
+  showcaseFilter: "", // "" = all car models
 };
 
 const listeners = new Set();
@@ -191,6 +196,7 @@ const BACK_TARGET = {
   success: () => null, // a submitted booking is done — no way back into it
   referral: () => state.referralReturn || "home",
   gallery: () => "home",
+  showcase: () => "home",
 };
 
 export function nav(screen) {

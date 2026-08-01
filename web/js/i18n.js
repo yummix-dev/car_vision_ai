@@ -49,6 +49,7 @@ const MESSAGES = {
     "home.cta_pick": "Выбрать, что примерить",
     "home.cta_example": "Посмотреть пример",
     "home.gallery": "Мои примерки",
+    "home.showcase": "Реальные сборки",
     "home.lang_switch": "Til / Язык",
 
     // ── example ──
@@ -155,6 +156,14 @@ const MESSAGES = {
     "gallery.delete": "Удалить",
     "gallery.confirm_delete": "Удалить эту примерку?",
     "gallery.load_error": "Не удалось загрузить примерки.",
+
+    // ── showcase ("Реальные сборки") ──
+    "showcase.title": "Реальные сборки",
+    "showcase.lede": "Настоящие установки на такие же машины, как ваша.",
+    "showcase.all": "Все",
+    "showcase.try": "Примерить как здесь",
+    "showcase.empty": "Здесь появятся реальные работы магазина.",
+    "showcase.load_error": "Не удалось загрузить сборки.",
 
     // ── cart ──
     "cart.title": "Ваша сборка",
@@ -295,6 +304,7 @@ const MESSAGES = {
     "home.cta_pick": "Nimani primerka qilishni tanlash",
     "home.cta_example": "Namunani koʻrish",
     "home.gallery": "Mening primerkalarim",
+    "home.showcase": "Haqiqiy ishlar",
     "home.lang_switch": "Til / Язык",
 
     "example.eyebrow": "Namuna",
@@ -393,6 +403,14 @@ const MESSAGES = {
     "gallery.delete": "Oʻchirish",
     "gallery.confirm_delete": "Bu primerkani oʻchirilsinmi?",
     "gallery.load_error": "Primerkalarni yuklab boʻlmadi.",
+
+    // ── showcase ("Haqiqiy ishlar") ──
+    "showcase.title": "Haqiqiy ishlar",
+    "showcase.lede": "Xuddi sizniki kabi mashinalarga haqiqiy oʻrnatishlar.",
+    "showcase.all": "Barchasi",
+    "showcase.try": "Xuddi shunday primerka qilish",
+    "showcase.empty": "Bu yerda magazinning haqiqiy ishlari paydo boʻladi.",
+    "showcase.load_error": "Ishlarni yuklab boʻlmadi.",
 
     "cart.title": "Sizning yigʻmangiz",
     "cart.empty": "Savat boʻsh. Boʻlim tanlang va mahsulotni primerka qiling.",

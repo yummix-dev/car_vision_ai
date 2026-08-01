@@ -18,6 +18,7 @@ from app.routers import (
     pricing,
     quota,
     referral,
+    showcase,
     vehicle,
 )
 from app.services import cleanup, services_repo
@@ -75,6 +76,7 @@ def create_app() -> FastAPI:
     app.include_router(pricing.router)
     app.include_router(generation.router)
     app.include_router(gallery.router)
+    app.include_router(showcase.router)
     app.include_router(cart.router)
 
     settings = get_settings()

@@ -10,14 +10,22 @@ import html
 import secrets
 import time
 
-from fastapi import APIRouter, Depends, Form, HTTPException, Query
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 from app.config import get_settings
 from app.db import connect
 from app.money import fmt
-from app.services import analytics, quota, referrals, reward_codes, services_repo
+from app.services import (
+    analytics,
+    photos,
+    quota,
+    referrals,
+    reward_codes,
+    services_repo,
+    showcase,
+)
 from app.services.catalog_service import get_catalog
 
 router = APIRouter(tags=["admin"])
@@ -275,6 +283,48 @@ def _referral_chain_section() -> str:
 <th>Источник</th><th class='n'>Бонус</th></tr></thead><tbody>{rows}</tbody></table>"""
 
 
+def _showcase_section() -> str:
+    """Curate the public 'Реальные сборки' feed — real installs with before/after
+    photos, shown to customers as social proof."""
+    catalog = get_catalog()
+    rows = ""
+    for b in showcase.all_admin():
+        dim = "" if b["active"] else " style='opacity:.5'"
+        car = _e(" ".join(str(p) for p in (b["car_brand"], b["car_model"], b["car_year"]) if p))
+        rows += f"""<tr{dim}>
+          <td>{car}</td><td>{_e(b['title'])}</td>
+          <td>{'видна' if b['active'] else 'скрыта'}</td>
+          <td class='n'>
+            <form method='post' action='/admin/showcase/{b['id']}/delete'
+                  onsubmit="return confirm('Удалить сборку?')" style='margin:0'>
+              <button class='btn' type='submit'>Удалить</button></form>
+          </td></tr>"""
+    table = (
+        f"<table><thead><tr><th>Машина</th><th>Что сделали</th><th>Статус</th>"
+        f"<th class='n'></th></tr></thead><tbody>{rows}</tbody></table>"
+        if rows else "<p class='mut'>Сборок пока нет.</p>"
+    )
+    brand_opts = "".join(f"<option>{_e(b)}</option>" for b in catalog.car_options.brands)
+    model_opts = "".join(f"<option>{_e(m)}</option>" for m in catalog.car_options.models)
+    year_opts = "<option value=''>—</option>" + "".join(
+        f"<option>{y}</option>" for y in catalog.car_options.years)
+    cat_opts = "<option value=''>—</option>" + "".join(
+        f"<option value='{_e(c.id)}'>{_e(c.label)}</option>" for c in catalog.categories)
+    form = f"""<form method='post' action='/admin/showcase' enctype='multipart/form-data'
+      class='row' style='gap:8px;margin-top:10px;flex-wrap:wrap;align-items:flex-end'>
+      <label style='font-size:12px'>Марка<br><select name='car_brand'>{brand_opts}</select></label>
+      <label style='font-size:12px'>Модель<br><select name='car_model'>{model_opts}</select></label>
+      <label style='font-size:12px'>Год<br><select name='car_year'>{year_opts}</select></label>
+      <label style='font-size:12px'>Раздел<br><select name='category_id'>{cat_opts}</select></label>
+      <label style='font-size:12px;flex:1;min-width:150px'>Что сделали<br>
+        <input name='title' placeholder='Руль Mercedes-AMG' style='width:100%'></label>
+      <label style='font-size:12px'>Фото «до»<br><input type='file' name='before' accept='image/*'></label>
+      <label style='font-size:12px'>Фото «после»<br><input type='file' name='after' accept='image/*'></label>
+      <button class='btn ok' type='submit'>Добавить</button>
+    </form>"""
+    return f"<h2>Реальные сборки (лента)</h2>{table}{form}"
+
+
 @router.post("/admin/services")
 def create_service(
     category_id: str = Form(...),
@@ -309,6 +359,42 @@ def edit_service(
         )
     except services_repo.ServiceError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return RedirectResponse("/admin", status_code=303)
+
+
+@router.post("/admin/showcase")
+async def create_showcase(
+    car_brand: str = Form(...),
+    car_model: str = Form(...),
+    car_year: str = Form(default=""),
+    category_id: str = Form(default=""),
+    title: str = Form(...),
+    before: UploadFile = File(...),
+    after: UploadFile = File(...),
+    _: None = Depends(_authorise),
+):
+    try:
+        before_saved = photos.save_upload(await before.read(), before.content_type or "")
+        after_saved = photos.save_upload(await after.read(), after.content_type or "")
+    except photos.PhotoError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    year = int(car_year) if car_year.strip().isdigit() else None
+    try:
+        showcase.create(
+            car_brand=car_brand, car_model=car_model, car_year=year,
+            category_id=category_id or None, title=title,
+            before_photo_id=before_saved["photo_id"],
+            after_photo_id=after_saved["photo_id"],
+        )
+    except showcase.ShowcaseError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return RedirectResponse("/admin", status_code=303)
+
+
+@router.post("/admin/showcase/{build_id}/delete")
+def delete_showcase(build_id: int, _: None = Depends(_authorise)):
+    showcase.delete(build_id)
     return RedirectResponse("/admin", status_code=303)
 
 
@@ -453,6 +539,8 @@ def funnel_page(
 <tbody>{''.join(rows)}</tbody></table>
 
 {_services_section()}
+
+{_showcase_section()}
 
 {_codes_section()}
 

@@ -36,7 +36,7 @@ const { setLang } = await load("i18n.js");
 const SCREEN_NAMES = [
   "lang", "flow", "home", "example", "pick", "upload", "car", "catalog",
   "config", "generating", "result", "cart", "request", "success",
-  "referral", "gallery",
+  "referral", "gallery", "showcase",
 ];
 const screens = {};
 for (const n of SCREEN_NAMES) screens[n] = await load(`screens/${n}.js`);
@@ -122,6 +122,9 @@ function seedState() {
     gallery: [{ id: 1, product_id: "amg", product_name: product.name, category_label: "Руль",
       car_label: "Chevrolet Malibu 2023", before_url: "/media/b.jpg", after_url: "/media/a.jpg", created_at: 1000 }],
     galleryView: null,
+    showcase: [{ id: 1, car_model: "Malibu", car_label: "Chevrolet Malibu 2023", category_id: "rul",
+      category_label: "Руль", title: "Руль Mercedes-AMG", before_url: "/media/b.jpg", after_url: "/media/a.jpg" }],
+    showcaseFilter: "",
     cart: [{ uid: "x1", productId: "amg", categoryLabel: "Руль", name: product.name, time: "2–3 часа",
       total: 6650000, selections: { leather: "black" }, serviceIds: [1], serviceLines: ["Установка"],
       chips: ["LED-подсветка"], image: "/media/a.jpg" }],
