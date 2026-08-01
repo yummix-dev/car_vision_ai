@@ -19,12 +19,26 @@ def _now() -> int:
     return int(time.time())
 
 
-def seed_installation() -> None:
-    """Give every catalog category a default 'Установка' service.
+# Default installation price per category — installation is an ordinary paid
+# service (it used to be a free bundled line). The shop can still change any of
+# these in /admin. A category NOT listed here seeds free (0), so a newly added
+# category never silently gains a fee until it is priced.
+INSTALL_PRICE = {
+    "camF": 400_000,
+    "camR": 420_000,
+    "audio": 450_000,
+    "rul": 500_000,
+    "park": 550_000,
+    "bumperR": 580_000,
+    "bumperF": 600_000,
+}
 
-    Installation used to be a free bundled line; it is now an ordinary service.
-    Seeding it at price 0 keeps today's behaviour (nothing extra charged) until
-    the shop sets a price in the admin — a category never silently gains a fee.
+
+def seed_installation() -> None:
+    """Give every catalog category a default 'Установка' service at its INSTALL_PRICE.
+
+    Only inserts what is missing — an existing installation service (including a
+    price the shop set in /admin) is never overwritten on restart.
     """
     catalog = get_catalog()
     now = _now()
@@ -38,8 +52,8 @@ def seed_installation() -> None:
                 continue
             conn.execute(
                 "INSERT INTO services(category_id, name, price, default_on, active,"
-                " sort, created_at, updated_at) VALUES(?,?,0,1,1,0,?,?)",
-                (cat.id, "Установка", now, now),
+                " sort, created_at, updated_at) VALUES(?,?,?,1,1,0,?,?)",
+                (cat.id, "Установка", INSTALL_PRICE.get(cat.id, 0), now, now),
             )
 
 
