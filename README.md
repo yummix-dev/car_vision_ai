@@ -1,8 +1,9 @@
 # MyCar Vision AI
 
 Telegram-styled mini-app for a car-tuning shop: photograph a zone of your car →
-AI identifies the vehicle → pick and configure an aftermarket part → AI renders a
-before/after on your own photo → cart → installation booking.
+AI identifies the vehicle → pick an aftermarket part → AI renders a before/after
+on your own photo → compare options, save, add to cart, book the install and
+choose how to pay.
 
 FastAPI backend + a no-build vanilla-JS SPA. Bilingual — Russian and Uzbek (Latin),
 chosen on first open and switchable from home; prices in сум. See [Languages](#languages).
@@ -22,6 +23,13 @@ full-bleed below 440px wide).
 ```powershell
 .\.venv\Scripts\python.exe -m pytest
 ```
+
+The suite is Python, but the SPA's JavaScript is never rendered by pytest, so a
+render-time bug (a renamed variable missed on one line, a screen using `t()`
+without importing it) can ship green. `tests/smoke_client.mjs` executes every
+screen's render functions under Node with browser shims and fails on any thrown
+error; `tests/test_client_smoke.py` runs it as part of the suite (and skips where
+Node is unavailable). Both such bugs happened and both were caught this way.
 
 ## The two AI seams
 
@@ -104,11 +112,13 @@ would let any caller have the bot mail them somebody else's upload. This
 endpoint always requires valid initData, even when `TELEGRAM_REQUIRE_INIT_DATA`
 is off, because the user id *is* the destination.
 
-**Bookings are delivered, not stored.** `POST /api/booking` sends the order to
-the manager's chat and only then confirms it to the customer; a delivery failure
-is a 502 and no confirmation. That chat is the system of record — the
-`_bookings` dict in `app/routers/cart.py` is a session cache, which is why there
-is still no database.
+**Bookings are delivered *and* recorded.** `POST /api/booking` recomputes the
+total, persists an order (introduced for [Payments](#payments) — migration 009),
+and for anything the manager handles sends it to the manager's chat before
+confirming to the customer; a delivery failure is a 502 and no confirmation. The
+order row holds only the transaction — code, amount, payment method, status; the
+customer's name and phone still live only in the manager's chat, never in the
+database or analytics.
 
 ```dotenv
 TELEGRAM_BOT_TOKEN=123456:AA...   # unset → bookings are logged, not delivered
@@ -136,6 +146,37 @@ delta, validated against the product's category, and the client sends service
 ids, never amounts. `GET /api/catalog/<id>/services` lists a category's active
 services.
 
+## Payments
+
+Checkout offers three ways to pay: **cash on installation**, **card via Telegram
+Payments**, and **Uzum Nasiya installments**. The chosen method is validated (a
+pydantic `Literal`), stored on the order, and shown to the manager ("Оплата: …").
+
+`app/services/payments.py` is the seam — one boundary so the booking flow never
+branches on a provider. `is_online(method)` gates on a configured credential;
+`initiate(order, method)` returns a manager fallback today and a real
+invoice/redirect once a rail is live. Both online rails are **dormant until their
+credential is set**, then go live with no client change:
+
+- **Telegram Payments (card)** — needs a provider token connected in
+  [@BotFather](https://t.me/BotFather) (in Uzbekistan, Click or Payme) in
+  `TELEGRAM_PAYMENT_PROVIDER_TOKEN`, plus a bot-update webhook that answers
+  `pre_checkout_query` and confirms on `successful_payment`. The app processes no
+  bot updates today, so that webhook is the Phase-2 addition.
+- **Uzum Nasiya (installments)** — *not* part of Telegram Payments: a separate
+  server-to-server Merchant API (check / create / confirm / reverse / status
+  callbacks), needs a Uzum merchant account in `UZUM_MERCHANT_ID` / `UZUM_API_KEY`.
+
+Until a credential exists, every method routes to the manager, who arranges
+payment as the shop does today — so the choice is captured and useful from day one.
+
+```dotenv
+TELEGRAM_PAYMENT_PROVIDER_TOKEN=   # BotFather → connect Click/Payme; empty → manager routes it
+UZUM_MERCHANT_ID=                  # Uzum merchant cabinet
+UZUM_API_KEY=
+PAYMENT_CURRENCY=UZS
+```
+
 ## Analytics
 
 `/admin` (HTTP Basic, `ADMIN_PASSWORD`) shows the funnel: sessions reaching each
@@ -159,8 +200,8 @@ limit, and a **server-assigned timestamp** — a phone's clock is not evidence.
 
 Storage is one SQLite table in `data/analytics.db`, no ORM and no migrations.
 `booking_submitted` is recorded server-side, where the fact is certain, and
-carries only the amount and the number of positions. **Names and phone numbers
-never reach analytics** — they exist only in the manager's chat.
+carries only the amount, the number of positions and the payment method. **Names
+and phone numbers never reach analytics** — they exist only in the manager's chat.
 
 ## AI try-ons (quotas)
 
@@ -266,6 +307,27 @@ customer's balances and every movement behind them, including manual
 adjustments — where the comment is **required**, because an unexplained balance
 change is indistinguishable from a bug six months later.
 
+## Saved renders, the builds feed & compare
+
+Three customer-facing features share the render pipeline:
+
+- **"Мои примерки" (gallery)** — every successful render by a Telegram user is
+  auto-saved at job completion (`app/services/gallery.py`, migration 007) and
+  exempted from the media sweep, so they can return to it. `GET`/`DELETE
+  /api/gallery`. A browser visitor has no durable identity and so no gallery.
+- **"Реальные сборки" (showcase)** — a public, owner-curated feed of the shop's
+  real installs (before/after photos, the car, what was done), added in `/admin`
+  with an image upload and filterable by car model on the client
+  (`app/services/showcase.py`, migration 008, `GET /api/showcase`). Social proof;
+  each card can jump into the funnel for its zone.
+- **Compare** — from a result, pick another product in the section; it renders on
+  the *same* photo and the two variants show side by side. Client-only —
+  `web/js/screens/compare.js` reuses the existing generation and quote endpoints,
+  so there is no server change.
+
+Gallery and showcase photos are held in the normal `media/` pipeline but added to
+the cleanup sweep's protected set while their row exists, so they outlive the TTL.
+
 ## Limits and cleanup
 
 Nothing grows without a bound. A background sweep (`app/services/cleanup.py`,
@@ -281,26 +343,39 @@ about $0.05 a call against `gpt-image-2`.
 ## Editing the catalog
 
 Everything the shop sells lives in `app/data/catalog.yaml` — categories, products,
-option groups and price deltas. It is validated against Pydantic models at startup,
-so a bad price or a dangling option reference fails immediately rather than at
-checkout. No database.
+option groups and price deltas — plus its Uzbek translations in `*_uz` fields. It
+is validated against Pydantic models at startup, so a bad price or a dangling
+option reference fails immediately rather than at checkout. It **is** tracked in
+git (the `data/` gitignore rule is anchored to `/data/` so it never swallowed
+`app/data/`); the runtime SQLite files under the repo-root `data/` stay ignored.
+
+Not every category configures. **Wheels are ready-made** — the shop does not
+rework them, so they carry no option groups; the customer picks a wheel and
+previews it as-is, and the render prompt reproduces the reference photo faithfully
+rather than being told to change a colour that isn't on it. Magnitolas, bumpers,
+cameras and parktronics still configure (size, paint, night mode, sensor count).
 
 **Pricing is server-authoritative** (`app/services/pricing_service.py`). The client
 may display an estimate, but every total entering the cart or a booking is
-recomputed server-side. Installation is always bundled.
+recomputed server-side. Installation is no longer bundled — it is a seeded paid
+service (see [Paid services](#paid-services)).
 
 ## Layout
 
 ```
-app/       FastAPI: models, routers, services (AI seams, Telegram, analytics), catalog.yaml
-web/       the SPA — index.html, css/, js/{state,api,ui,icons,tg,analytics}.js, js/screens/*.js
-data/      the analytics SQLite file (gitignored)
+app/       FastAPI: models, routers, services (AI seams, telegram, quota, orders,
+           payments, gallery, showcase, …), i18n.py, db/migrations/*.sql, catalog.yaml
+web/       the SPA — index.html, css/, js/{state,api,ui,icons,tg,i18n,analytics}.js, js/screens/*.js
+data/      runtime SQLite files: analytics.db + app.db (gitignored)
 media/     uploads + generated images (gitignored)
-tests/     pricing golden cases, catalog validation, AI-seam contracts
+tests/     pricing golden cases, catalog/i18n/AI-seam/quota/gallery/showcase/payment
+           coverage, plus the client render smoke test (smoke_client.mjs)
 ```
 
-The SPA is a state machine: `state.screen` plus a `history[]` stack, no router and
-no build step. Events are delegated on `[data-act]` attributes.
+The SPA is a state machine: `state.screen` plus target-based back navigation, no
+router and no build step. Screen modules export `body()`/`bar()`/`overlay()`/
+`actions`/`onEnter`; events are delegated on `[data-act]` attributes. The schema
+grows through numbered `.sql` migrations applied on connect.
 
 ## Languages
 
@@ -314,7 +389,7 @@ The **catalog** is localized too. The client sends its language as `X-Lang`, and
 steps already resolved to that language (`app/services/catalog_service.py`),
 falling back to Russian wherever an Uzbek `*_uz` field in `catalog.yaml` is
 blank — so a half-translated catalog is never broken. Product names and brands
-(AMG Carbon LED) stay untranslated by design. Server-side user strings — booking
+(Mercedes-AMG Performance, BMW M Performance) stay untranslated by design. Server-side user strings — booking
 and generation errors, and the bot notifications — live in `app/i18n.py`; the
 user's chosen language is stored (`users.lang`) so notifications sent outside a
 request reach them in the right language. The `/admin` page and the manager's
@@ -334,11 +409,13 @@ services, error strings and stored language) and `tests/test_i18n_client.py`
 
 Telegram theme params are deliberately not adopted — the app ships its own fixed
 dark palette, and `setColors()` pushes that palette out to the client chrome
-instead. Online prepayment and a saved gallery of a user's own renders are
-candidate features, not built.
+instead. **Online payment is scaffolded but dormant** (see [Payments](#payments)):
+the Telegram-invoice + bot webhook and the Uzum Merchant API go live only once the
+shop connects a provider — until then the chosen method routes to the manager.
 
-There is no booking store, deliberately: the manager's chat is the system of
-record and a second copy of customers' phone numbers would earn nothing.
+Customers' names and phone numbers are still never persisted: the orders table
+holds only the transaction, and the contact stays in the manager's chat — the one
+place that actually needs it.
 
 The cart, the contact form and the confirmed car survive a reload via
 `localStorage` (`web/js/state.js`). Deliberately excluded: the photo, the
