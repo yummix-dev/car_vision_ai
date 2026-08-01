@@ -50,7 +50,6 @@ const MESSAGES = {
     "home.cta_example": "Посмотреть пример",
     "home.gallery": "Мои примерки",
     "home.showcase": "Реальные сборки",
-    "home.lang_switch": "Til / Язык",
 
     // ── example ──
     "example.eyebrow": "Пример",
@@ -318,7 +317,6 @@ const MESSAGES = {
     "home.cta_example": "Namunani koʻrish",
     "home.gallery": "Mening primerkalarim",
     "home.showcase": "Haqiqiy ishlar",
-    "home.lang_switch": "Til / Язык",
 
     "example.eyebrow": "Namuna",
     "example.title": "Chevrolet Malibu uchun AMG Carbon LED",

@@ -1,5 +1,5 @@
-import { t } from "../i18n.js";
-import { nav, setState, state } from "../state.js";
+import { getLang, setLang, t } from "../i18n.js";
+import { nav, state } from "../state.js";
 import { ba } from "../ui.js";
 import { icon } from "../icons.js";
 
@@ -12,16 +12,18 @@ export function body() {
     )
     .join("");
 
+  const lang = getLang() || "ru";
+
   return `
-    <div class="row" style="justify-content:space-between;margin-bottom:2px;gap:6px">
-      <div class="row" style="gap:6px">
-        <button class="btn" style="font-size:12.5px;padding:5px 11px" data-act="openShowcase">
-          ${icon("gallery", 14)} ${t("home.showcase")}</button>
-        <button class="btn" style="font-size:12.5px;padding:5px 11px" data-act="openGallery">
-          ${t("home.gallery")}</button>
+    <div class="htop">
+      <div class="htop-l">
+        <button class="hchip" data-act="openShowcase">${icon("grid", 15)}${t("home.showcase")}</button>
+        <button class="hchip" data-act="openGallery">${icon("bookmark", 15)}${t("home.gallery")}</button>
       </div>
-      <button class="btn" style="font-size:12.5px;padding:5px 11px" data-act="switchLang">
-        ${icon("globe", 14)} ${t("home.lang_switch")}</button>
+      <div class="langseg">
+        <button data-act="setLangRu" class="${lang === "ru" ? "on" : ""}">RU</button>
+        <button data-act="setLangUz" class="${lang === "uz" ? "on" : ""}">UZ</button>
+      </div>
     </div>
     <h1>${t("home.title")}</h1>
     <p>${t("home.lede")}</p>
@@ -42,11 +44,19 @@ export const bar = () => `
   <button class="cta" data-act="toPick">${t("home.cta_pick")}</button>
   <button class="cta sec" data-act="toExample">${t("home.cta_example")}</button>`;
 
+function switchTo(lang) {
+  if ((getLang() || "ru") === lang) return;
+  setLang(lang);
+  // Refetch the catalog in the new language and re-render home, the same path
+  // the first-open language screen uses.
+  window.dispatchEvent(new CustomEvent("lang-changed", { detail: { dest: "home" } }));
+}
+
 export const actions = {
   toPick: () => nav("pick"),
   toExample: () => nav("example"),
   openGallery: () => nav("gallery"),
   openShowcase: () => nav("showcase"),
-  // Reopen the language screen; it returns here after a choice.
-  switchLang: () => setState({ langReturn: "home", screen: "lang" }),
+  setLangRu: () => switchTo("ru"),
+  setLangUz: () => switchTo("uz"),
 };

@@ -21,7 +21,8 @@ I18N_JS = Path(__file__).resolve().parent.parent / "web" / "js" / "i18n.js"
 CYRILLIC = re.compile("[А-Яа-яЁё]")
 
 # Labels that name the languages themselves and are bilingual on purpose.
-BILINGUAL = {"home.lang_switch"}  # "Til / Язык"
+# (The language screen hardcodes its own bilingual title in lang.js, not here.)
+BILINGUAL: set[str] = set()
 
 
 def _block(src: str, lang: str) -> str:

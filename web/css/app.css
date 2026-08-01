@@ -170,6 +170,22 @@ p{margin:0 0 12px;font-size:14px;line-height:1.45;color:var(--muted)}
 .btn:hover{background:var(--card2)}
 .btn.on{background:var(--blueSoft);border-color:rgba(59,130,246,.5);color:#9cc2ff}
 
+/* ── Home quick-actions bar (above the hero) ───────────────── */
+.htop{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:16px}
+.htop-l{display:flex;gap:8px;min-width:0}
+.hchip{display:inline-flex;align-items:center;gap:7px;background:var(--card2);border:0;
+  color:var(--muted);border-radius:var(--r-pill);padding:8px 13px;font-size:13px;
+  font-weight:500;line-height:1;cursor:pointer;white-space:nowrap;transition:background .12s,color .12s}
+.hchip svg{color:var(--muted2);flex:none;transition:color .12s}
+.hchip:hover{background:#232c38;color:var(--txt)}
+.hchip:hover svg{color:var(--txt)}
+/* Two-option language switch — a segmented pill, active side filled. */
+.langseg{display:inline-flex;background:var(--card2);border-radius:var(--r-pill);padding:3px;flex:none}
+.langseg button{border:0;background:none;color:var(--muted2);font-family:var(--disp);
+  font-size:12.5px;font-weight:700;letter-spacing:.4px;padding:5px 11px;border-radius:16px;cursor:pointer;transition:color .12s}
+.langseg button:hover{color:var(--txt)}
+.langseg button.on{background:var(--blue);color:#fff}
+
 /* ── Chips & options ───────────────────────────────────────── */
 .chips{display:flex;flex-wrap:wrap;gap:7px}
 .chip{border:1px solid var(--line);background:var(--bg2);color:var(--muted);border-radius:var(--r-pill);
