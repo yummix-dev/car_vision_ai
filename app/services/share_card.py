@@ -12,6 +12,7 @@ import io
 
 from PIL import Image, ImageDraw, ImageFont
 
+from app.i18n import t
 from app.money import fmt
 
 WIDTH = 1080
@@ -53,6 +54,7 @@ def build(
     category_label: str = "",
     price: int | None = None,
     shop_name: str = "MyCar Vision AI",
+    lang: str = "ru",
 ) -> bytes:
     """Render the share card as JPEG bytes."""
     photo = Image.open(io.BytesIO(after_image)).convert("RGB")
@@ -86,13 +88,13 @@ def build(
 
     if car_label:
         f = _font(34)
-        draw.text((PAD, y), _fit(draw, f"для {car_label}", f, WIDTH - 2 * PAD),
+        draw.text((PAD, y), _fit(draw, t("share.for", lang, car=car_label), f, WIDTH - 2 * PAD),
                   font=f, fill=MUTED)
         y += 52
 
     if price is not None:
         f = _font(46, bold=True)
-        draw.text((PAD, y), f"{fmt(price)} сум", font=f, fill=ACCENT)
+        draw.text((PAD, y), f"{fmt(price)} {t('share.currency', lang)}", font=f, fill=ACCENT)
 
     f = _font(30)
     label = _fit(draw, shop_name, f, WIDTH - 2 * PAD)

@@ -17,6 +17,8 @@ from app.models.telegram import TelegramUser
 from app.server import create_app
 from app.services import services_repo, users
 
+from tests.test_telegram import make_init_data
+
 CYRILLIC = re.compile("[А-Яа-яЁё]")
 
 
@@ -174,3 +176,41 @@ def test_tries_pluralisation():
 
 def test_t_falls_back_to_russian_for_unknown_lang():
     assert t("err.cart_empty", "en") == "Корзина пуста"
+
+
+def test_reward_code_error_is_localized():
+    """A bad code shown to a customer is in their language — the CodeError
+    carries an i18n key, the router localises it."""
+    client = TestClient(create_app())
+    res = client.post(
+        "/api/reward-codes/activate",
+        json={"code": "NOPE12345"},
+        headers={"X-Telegram-Init-Data": make_init_data(), "X-Lang": "uz"},
+    )
+    assert res.status_code == 400
+    assert res.json()["detail"] == "Kod topilmadi"
+
+
+def test_share_card_and_caption_localize(tmp_path, monkeypatch):
+    """The share card/caption sent into the customer's chat is Uzbek for a uz
+    caller — no baked-in Russian ('для', 'сум')."""
+    from app.services import share_card
+
+    # The card renders "{car} uchun" and the uz currency, not "для …/сум".
+    png = share_card.build(
+        _jpeg(), product_name="AMG", car_label="Chevrolet Malibu", price=6_200_000, lang="uz"
+    )
+    assert png[:3] == b"\xff\xd8\xff"  # a JPEG came back (compose did not crash)
+    assert t("share.for", "uz", car="X") == "X uchun"
+    assert t("share.currency", "uz") == "soʻm"
+    assert t("share.cta", "uz") == "Oʻz mashinangni yigʻib koʻr:"
+
+
+def _jpeg() -> bytes:
+    import io
+
+    from PIL import Image
+
+    buf = io.BytesIO()
+    Image.new("RGB", (64, 48), "#345").save(buf, "JPEG")
+    return buf.getvalue()

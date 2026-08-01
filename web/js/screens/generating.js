@@ -48,7 +48,7 @@ export function body() {
       </div>
     </div>
     <h2 style="margin-top:16px">${t("gen.title")}</h2>
-    <p data-gen="sub">${esc(job?.sub || "")}</p>
+    <p data-gen="sub">${t("gen.sub")}</p>
     <div class="progress"><b data-gen="bar" style="width:${pct}%"></b></div>
     <div class="row" style="justify-content:space-between;margin-top:7px">
       <span class="micro">${t("gen.progress")}</span><span class="num" data-gen="pct">${pct}%</span>
@@ -75,7 +75,7 @@ export function patch() {
 
   set("bar", (el) => (el.style.width = `${pct}%`));
   set("pct", (el) => (el.textContent = `${pct}%`));
-  set("sub", (el) => (el.textContent = job.sub || ""));
+  set("sub", (el) => (el.textContent = t("gen.sub")));
   set("steps", (list) => {
     const idx = job.step_index ?? 0;
     [...list.children].forEach((li, i) => {

@@ -32,14 +32,15 @@ CANCELLED = "cancelled"
 
 
 class CodeError(Exception):
-    """Activation refused. The message is shown to the customer verbatim."""
+    """Activation refused. The message is an i18n key; the router localises it to
+    the customer's language (app/routers/quota.py)."""
 
 
-NOT_FOUND = "Код не найден"
-ALREADY_USED = "Код уже использован"
-IS_EXPIRED = "Срок действия кода истёк"
-WRONG_USER = "Этот код предназначен для другого пользователя"
-GENERIC = "Не удалось активировать код. Попробуйте позже"
+NOT_FOUND = "err.code_not_found"
+ALREADY_USED = "err.code_used"
+IS_EXPIRED = "err.code_expired"
+WRONG_USER = "err.code_wrong_user"
+GENERIC = "err.code_generic"
 
 
 def _now() -> int:

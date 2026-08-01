@@ -145,7 +145,7 @@ async def share_result(
         ) from exc
 
     found = get_catalog().find_product(req.product_id) if req.product_id else None
-    card = _build_card(image_bytes, found, req)
+    card = _build_card(image_bytes, found, req, lang)
 
     # The link rides in the caption, not in the picture: a link in pixels is
     # not tappable, and a forwarded screenshot keeps the caption anyway.
@@ -167,7 +167,7 @@ async def share_result(
             user_id=user.id,
             image_bytes=card,
             filename=f"{state.after_photo_id}-card.jpg",
-            caption=_caption(req, share_url),
+            caption=_caption(req, share_url, lang),
         )
     except WriteAccessDenied as exc:
         raise HTTPException(
@@ -182,31 +182,32 @@ async def share_result(
     return ShareResponse()
 
 
-def _build_card(image_bytes: bytes, found, req: ShareRequest) -> bytes:
+def _build_card(image_bytes: bytes, found, req: ShareRequest, lang: str) -> bytes:
     """A card that fails to compose must not cost the customer their share —
     fall back to the bare render."""
+    category_label = ""
+    if found:
+        cat = found[0]
+        category_label = cat.label_uz if lang == "uz" and cat.label_uz else cat.label
     try:
         return share_card.build(
             image_bytes,
-            product_name=found[1].name if found else "AI-визуализация",
+            product_name=found[1].name if found else t("share.card_fallback", lang),
             car_label=req.car_label,
-            category_label=found[0].label if found else "",
+            category_label=category_label,
             price=found[1].base_price if found else None,
+            lang=lang,
         )
     except Exception:  # noqa: BLE001
         log.exception("share card composition failed")
         return image_bytes
 
 
-def _caption(req: ShareRequest, share_url: str = "") -> str:
+def _caption(req: ShareRequest, share_url: str, lang: str) -> str:
     found = get_catalog().find_product(req.product_id) if req.product_id else None
-    product = found[1].name if found else "Визуализация"
+    product = found[1].name if found else t("share.product_fallback", lang)
     car = f" · {req.car_label}" if req.car_label else ""
     lines = [f"{product}{car}"]
     if share_url:
-        lines += [
-            "",
-            "Попробуй собрать свою машину:",
-            share_url,
-        ]
+        lines += ["", t("share.cta", lang), share_url]
     return "\n".join(lines)

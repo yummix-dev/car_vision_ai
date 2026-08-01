@@ -47,18 +47,18 @@ def activate_code(
     user: dict | None = Depends(current_user),
     x_lang: str | None = Header(default=None),
 ) -> dict:
+    lang = lang_of(x_lang)
     if user is None:
-        raise HTTPException(
-            status_code=401, detail=t("err.no_telegram", lang_of(x_lang))
-        )
+        raise HTTPException(status_code=401, detail=t("err.no_telegram", lang))
     try:
         result = reward_codes.activate(user["id"], req.code)
     except reward_codes.CodeError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        # The CodeError message is an i18n key — localise it for the customer.
+        raise HTTPException(status_code=400, detail=t(str(exc), lang)) from exc
     except Exception as exc:  # noqa: BLE001 - never leak internals to a customer
         log.exception("code activation failed for user %s", user["id"])
         raise HTTPException(
-            status_code=500, detail=reward_codes.GENERIC
+            status_code=500, detail=t(reward_codes.GENERIC, lang)
         ) from exc
 
     notifications.code_activated(

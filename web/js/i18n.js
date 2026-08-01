@@ -129,6 +129,7 @@ const MESSAGES = {
     "gen.error_title": "Не удалось точно распознать фото",
     "gen.error_sub": "Попробуйте загрузить фотографию, где нужная зона полностью видна и хорошо освещена.",
     "gen.title": "Создаём визуализацию",
+    "gen.sub": "Меняем только выбранную зону, остальное сохраняем без изменений.",
     "gen.progress": "Прогресс",
     "gen.retry": "Загрузить другое фото",
 
@@ -396,6 +397,7 @@ const MESSAGES = {
     "gen.error_title": "Suratni aniq tanib boʻlmadi",
     "gen.error_sub": "Kerakli qism toʻliq koʻrinadigan va yaxshi yoritilgan suratni yuklab koʻring.",
     "gen.title": "Vizualizatsiya yaratyapmiz",
+    "gen.sub": "Faqat tanlangan qismni oʻzgartiramiz, qolganini saqlaymiz.",
     "gen.progress": "Jarayon",
     "gen.retry": "Boshqa surat yuklash",
 
