@@ -58,11 +58,8 @@ export function body() {
   const done = { save: state.saved, share: state.shared };
   const grid = buttons
     .map(
-      ([act, ic, label]) => `<button class="btn" data-act="${act}"
-        ${state.sharing && act === "share" ? "disabled" : ""}
-        style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px${
-          done[act] ? ";color:var(--green);border-color:rgba(34,197,94,.4)" : ""
-        }">${icon(ic, 16)}<span>${label}</span></button>`
+      ([act, ic, label]) => `<button class="ract${done[act] ? " done" : ""}" data-act="${act}"
+        ${state.sharing && act === "share" ? "disabled" : ""}>${icon(ic, 16)}<span>${label}</span></button>`
     )
     .join("");
 
@@ -93,7 +90,7 @@ export function body() {
       ${priceBlock(state.breakdown)}
     </div>
 
-    <div class="grid2" style="margin-top:12px">${grid}</div>
+    <div class="racts">${grid}</div>
     ${
       state.resultError
         ? `<div class="note" style="color:var(--red)">${esc(state.resultError)}</div>`

@@ -186,6 +186,19 @@ p{margin:0 0 12px;font-size:14px;line-height:1.45;color:var(--muted)}
 .langseg button:hover{color:var(--txt)}
 .langseg button.on{background:var(--blue);color:#fff}
 
+/* ── Result secondary actions — soft, not the heavy uppercase .btn ── */
+.racts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.ract{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--card2);
+  border:0;color:var(--muted);border-radius:var(--r-md);padding:11px 10px;font-size:13px;
+  font-weight:500;cursor:pointer;transition:background .12s,color .12s}
+.ract svg{color:var(--muted2);flex:none;transition:color .12s}
+.ract:hover{background:#232c38;color:var(--txt)}
+.ract:hover svg{color:var(--txt)}
+.ract.done,.ract.done svg{color:var(--green)}
+.ract[disabled]{opacity:.55;cursor:default}
+/* A lone last action (odd count) spans the full width instead of sitting half-empty. */
+.racts .ract:last-child:nth-child(odd){grid-column:1 / -1}
+
 /* ── Chips & options ───────────────────────────────────────── */
 .chips{display:flex;flex-wrap:wrap;gap:7px}
 .chip{border:1px solid var(--line);background:var(--bg2);color:var(--muted);border-radius:var(--r-pill);

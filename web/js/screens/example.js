@@ -19,7 +19,7 @@ export function body() {
     })}
     <div class="card" style="margin-top:14px">
       <div class="row" style="align-items:flex-start">
-        <div style="flex:1"><h3>AMG Carbon LED</h3>
+        <div style="flex:1"><h3>Mercedes-AMG Performance</h3>
           <div class="mut2" style="font-size:12px;margin-top:2px">${t("example.for")}</div>
         </div>${stockPill("in")}
       </div>
@@ -27,7 +27,7 @@ export function body() {
         <span class="tag">${t("example.tag_carbon")}</span><span class="tag">${t("example.tag_led")}</span><span class="tag">${t("example.tag_paddles")}</span>
       </div>
       <div class="price">
-        <div class="pl"><span>AMG Carbon LED</span><span>6 200 000</span></div>
+        <div class="pl"><span>Mercedes-AMG Performance</span><span>6 200 000</span></div>
         <div class="pl"><span>${t("config.services")}</span><span>600 000</span></div>
         <div class="pl"><span>${t("example.install")}</span><span>${t("example.install_incl")}</span></div>
         <div class="total"><span class="micro">${t("example.total")}</span><span class="num">6 800 000 ${t("ui.currency")}</span></div>

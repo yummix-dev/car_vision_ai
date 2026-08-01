@@ -29,7 +29,7 @@ const MESSAGES = {
     "flow.s4.t": "Подбираем совместимые товары",
     "flow.s4.d": "Только то, что подходит вашей машине.",
     "flow.s5.t": "Настройте товар",
-    "flow.s5.d": "Цвет кожи, строчка, вставки, подсветка.",
+    "flow.s5.d": "Размер, покраска и доп-опции — там, где они есть.",
     "flow.s6.t": "AI создаёт визуализацию",
     "flow.s6.d": "Меняем только выбранную зону на вашем фото.",
     "flow.s7.t": "Сравните до и после",
@@ -53,10 +53,10 @@ const MESSAGES = {
 
     // ── example ──
     "example.eyebrow": "Пример",
-    "example.title": "AMG Carbon LED на Chevrolet Malibu",
+    "example.title": "Mercedes-AMG Performance на Chevrolet Malibu",
     "example.cap_before": "[ исходное фото ]",
     "example.cap_after": "[ AI-результат ]",
-    "example.for": "Кожа + карбон · для Chevrolet Malibu",
+    "example.for": "Кожа + перфорация · для Chevrolet Malibu",
     "example.tag_carbon": "Карбон",
     "example.tag_led": "LED",
     "example.tag_paddles": "Лепестки",
@@ -104,7 +104,7 @@ const MESSAGES = {
 
     // ── catalog ──
     "catalog.change_section": "Сменить раздел",
-    "catalog.configure": "Настроить",
+    "catalog.configure": "Примерить",
     "catalog.in_stock": "В наличии",
     "catalog.on_order": "Под заказ",
     "catalog.filter_pop": "Популярные",
@@ -297,7 +297,7 @@ const MESSAGES = {
     "flow.s4.t": "Mos mahsulotlarni tanlaymiz",
     "flow.s4.d": "Faqat mashinangizga mos keladiganlar.",
     "flow.s5.t": "Mahsulotni sozlang",
-    "flow.s5.d": "Teri rangi, tikuv, qoplama, yoritish.",
+    "flow.s5.d": "Oʻlcham, boʻyash va qoʻshimcha optsiyalar — bor joyda.",
     "flow.s6.t": "AI vizualizatsiya yaratadi",
     "flow.s6.d": "Suratingizda faqat tanlangan qismni oʻzgartiramiz.",
     "flow.s7.t": "Avval va keyinni solishtiring",
@@ -319,10 +319,10 @@ const MESSAGES = {
     "home.showcase": "Haqiqiy ishlar",
 
     "example.eyebrow": "Namuna",
-    "example.title": "Chevrolet Malibu uchun AMG Carbon LED",
+    "example.title": "Chevrolet Malibu uchun Mercedes-AMG Performance",
     "example.cap_before": "[ asl surat ]",
     "example.cap_after": "[ AI natija ]",
-    "example.for": "Teri + karbon · Chevrolet Malibu uchun",
+    "example.for": "Teri + perforatsiya · Chevrolet Malibu uchun",
     "example.tag_carbon": "Karbon",
     "example.tag_led": "LED",
     "example.tag_paddles": "Kurakchalar",
@@ -366,7 +366,7 @@ const MESSAGES = {
     "car.confirm": "Avtomobilni tasdiqlash",
 
     "catalog.change_section": "Boʻlimni almashtirish",
-    "catalog.configure": "Sozlash",
+    "catalog.configure": "Primerka qilish",
     "catalog.in_stock": "Mavjud",
     "catalog.on_order": "Buyurtma asosida",
     "catalog.filter_pop": "Ommabop",
