@@ -11,23 +11,25 @@ def sel(**kwargs) -> list[Selection]:
     return [Selection(group_id=k, choice_id=v) for k, v in kwargs.items()]
 
 
-def test_wheel_defaults_apply_product_preset():
-    # Mercedes-AMG Performance ships as leather with LED and paddles on (its
-    # reference photo is a leather AMG wheel; carbon insert is an opt-in extra).
+def test_ready_made_wheel_is_just_its_base_price():
+    # Wheels are ready-made products the shop does not rework, so they carry no
+    # options — a wheel quote is exactly its base price, one line, no deltas.
     q = quote("amg", [])
-    assert q.total == 6_200_000 + 250_000 + 200_000
-    assert q.total == 6_650_000
-    assert q.total_formatted == "6 650 000"
-
-
-def test_wheel_stripped_to_base():
-    q = quote("amg", sel(insert="leather", mark="none", led="off", paddles="off"))
     assert q.total == 6_200_000
+    assert q.total_formatted == "6 200 000"
+    assert len(q.lines) == 1
 
 
-def test_wheel_addons_priced_individually():
-    q = quote("urban", sel(insert="carbon", mark="carbon", led="on", paddles="on"))
-    assert q.total == 3_400_000 + 300_000 + 250_000 + 250_000 + 200_000
+def test_a_wheel_rejects_any_option():
+    # Nothing to configure — a stray option group is an error, not ignored.
+    with pytest.raises(PricingError):
+        quote("amg", sel(insert="leather"))
+
+
+def test_addons_priced_individually():
+    # A category that still configures (front camera): each delta lands on top.
+    q = quote("cf1", sel(q="fhd", night="on", lines="on"))
+    assert q.total == 600_000 + 300_000 + 200_000 + 250_000
 
 
 def test_audio_segment_and_toggle():
@@ -70,7 +72,7 @@ def test_unknown_group_rejected():
 
 def test_unknown_choice_rejected():
     with pytest.raises(PricingError):
-        quote("amg", sel(insert="titanium"))
+        quote("cf1", sel(q="titanium"))  # cf1 has a `q` group, but no such choice
 
 
 @pytest.mark.parametrize(

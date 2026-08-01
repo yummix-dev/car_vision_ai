@@ -54,8 +54,13 @@ def test_prices_are_non_negative_integers():
                 assert choice.price_delta >= 0
 
 
-def test_wheel_category_swatches_carry_hex():
-    rul = catalog.category("rul")
-    for gid in ("leather", "stitch"):
-        group = rul.group(gid)
-        assert all(c.hex for c in group.choices), f"{gid} needs hex values"
+def test_swatch_groups_carry_hex():
+    """Any swatch-rendered choice must carry a hex colour for the live preview.
+
+    No category ships swatch groups today (wheels are ready-made, no finish
+    options), so this passes vacuously — it guards the invariant if one returns.
+    """
+    for cat in catalog.categories:
+        for group in cat.option_groups:
+            if group.ui in ("swatch_square", "swatch_round"):
+                assert all(c.hex for c in group.choices), f"{cat.id}.{group.id} swatches need hex"

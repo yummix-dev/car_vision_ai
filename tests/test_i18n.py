@@ -55,9 +55,11 @@ def test_catalog_uz_translates_labels_options_and_steps():
 
     assert rul["label"] == "Rul"
     assert rul["gen_steps"][0] == "Eski rul holatini aniqlaymiz"
-    leather = next(g for g in rul["option_groups"] if g["id"] == "leather")
-    assert leather["label"] == "Teri rangi"
-    assert leather["choices"][0]["label"] == "Qora"
+    # Options live on categories that still configure — wheels are option-free.
+    bumper = next(c for c in cats if c["id"] == "bumperF")
+    paint = next(g for g in bumper["option_groups"] if g["id"] == "paint")
+    assert paint["label"] == "Boʻyash"
+    assert any(ch["label"] == "Kuzov rangiga" for ch in paint["choices"])
 
 
 def test_catalog_uz_leaves_product_names_and_translates_material_tags():

@@ -179,17 +179,26 @@ async def test_provider_returns_two_urls_and_preserves_source_dimensions():
 
 @pytest.mark.asyncio
 async def test_provider_prompt_carries_the_zone_and_the_resolved_config():
-    """The preview must depict the config the customer is being quoted for."""
-    gen, edits = _stub_provider(_jpeg((256, 256)))
+    """The preview must depict the config the customer is being quoted for.
 
-    await gen.generate(_rul_job(selections=[Selection(group_id="leather", choice_id="beige")]))
+    Uses a camera — wheels are ready-made with no options, so a category that
+    still configures is what exercises 'the resolved config appears in the prompt'.
+    """
+    gen, edits = _stub_provider(_jpeg((256, 256)))
+    demo = photos.ensure_demo_photo()
+    job = GenerationJob(
+        job_id="t", source_photo_id=demo["photo_id"], product_id="cf1",
+        category_id="camF", region_label="переднюю камеру",
+        selections=[Selection(group_id="night", choice_id="on")],
+    )
+
+    await gen.generate(job)
 
     prompt = edits.calls[0]["prompt"]
-    assert "руль" in prompt                 # the zone, from region_label
-    assert "Mercedes-AMG Performance" in prompt  # the product
-    assert "Бежевый" in prompt              # the explicit selection
-    assert "#c9b79c" in prompt              # its swatch, for colour accuracy
-    assert "Чёрная" in prompt               # a default (stitch) that was never overridden
+    assert "переднюю камеру" in prompt       # the zone, from region_label
+    assert "FrontEye HD" in prompt           # the product
+    assert "Ночной режим" in prompt          # the explicit toggle selection
+    assert "Качество" in prompt              # a default (quality=HD) never overridden
 
 
 @pytest.mark.asyncio

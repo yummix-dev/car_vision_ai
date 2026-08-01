@@ -96,6 +96,11 @@ export function body() {
   const groups = cat.option_groups
     .map((g) => optionGroup(g, state.selections))
     .join("");
+  // Ready-made products (wheels) have no options — skip the empty card entirely
+  // rather than showing a blank bar where the configurator used to be.
+  const optionsCard = groups
+    ? `<div class="card" style="padding:2px 14px 12px">${groups}</div>`
+    : "";
 
   return `
     <div class="card" style="padding:0;overflow:hidden">${preview}</div>
@@ -103,7 +108,7 @@ export function body() {
     <div class="mut2" style="font-size:12.5px;margin-bottom:12px">
       ${esc(product.material || "")} · ${t("config.for")} ${esc(carLabelShort())}
     </div>
-    <div class="card" style="padding:2px 14px 12px">${groups}</div>
+    ${optionsCard}
     ${serviceSection()}
     <div class="card">${priceBlock(state.breakdown)}</div>
     ${balanceChip(cat.label)}

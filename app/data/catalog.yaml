@@ -41,65 +41,10 @@ categories:
       - Tanlangan rulni qoʻshamiz
       - Yoritish va aks etishlarni moslaymiz
       - Natijani tekshiramiz
-    option_groups:
-      - id: leather
-        label: Цвет кожи
-        label_uz: Teri rangi
-        type: segment
-        default: black
-        ui: swatch_square
-        choices:
-          - { id: black, label: Чёрный, label_uz: Qora, hex: "#1c1c1e" }
-          - { id: gray, label: Серый, label_uz: Kulrang, hex: "#5b626b" }
-          - { id: beige, label: Бежевый, label_uz: Bej, hex: "#c9b79c" }
-          - { id: brown, label: Коричневый, label_uz: Jigarrang, hex: "#6b4a34" }
-          - { id: red, label: Красный, label_uz: Qizil, hex: "#7a2530" }
-      - id: stitch
-        label: Цвет строчки
-        label_uz: Chok rangi
-        type: segment
-        default: red
-        ui: swatch_round
-        choices:
-          - { id: red, label: Красная, label_uz: Qizil, hex: "#d64545" }
-          - { id: blue, label: Синяя, label_uz: Koʻk, hex: "#3b82f6" }
-          - { id: white, label: Белая, label_uz: Oq, hex: "#e8e8e8" }
-          - { id: black, label: Чёрная, label_uz: Qora, hex: "#2a2a2a" }
-          - { id: yellow, label: Жёлтая, label_uz: Sariq, hex: "#d9a441" }
-      - id: insert
-        label: Вставка
-        label_uz: Qoplama
-        type: segment
-        default: leather
-        choices:
-          - { id: leather, label: Кожа, label_uz: Teri, price_delta: 0 }
-          - { id: carbon, label: Карбон, label_uz: Karbon, price_delta: 300000 }
-          - { id: alcantara, label: Алькантара, label_uz: Alkantara, price_delta: 150000 }
-      - id: mark
-        label: Метка 12 часов
-        label_uz: 12 soatlik belgi
-        type: segment
-        default: logo
-        choices:
-          - { id: none, label: Нет, label_uz: Yoʻq, price_delta: 0 }
-          - { id: logo, label: Логотип, label_uz: Logotip, price_delta: 150000 }
-          - { id: carbon, label: Карбон, label_uz: Karbon, price_delta: 250000 }
-      - id: led
-        label: LED-подсветка
-        label_uz: LED-yoritish
-        type: toggle
-        default: "on"
-        ui: switch
-        choices:
-          - { id: "on", label: LED-подсветка, label_uz: LED-yoritish, price_delta: 250000 }
-      - id: paddles
-        label: Подрулевые лепестки
-        label_uz: Rul kurakchalari
-        type: toggle
-        default: "on"
-        ui: switch
-        choices:
-          - { id: "on", label: Подрулевые лепестки, label_uz: Rul kurakchalari, price_delta: 200000 }
+    # Рули — готовый продукт, магазин их не дорабатывает: никаких опций отделки.
+    # Покупатель выбирает руль и сразу видит его на своей машине. Флаги ниже
+    # питают строку фильтров (Карбон / LED / Лепестки), а не настройки товара.
+    option_groups: []
     products:
       # Товары названы по реальным рулям, снятым для эталонов генерации (фото в
       # web/img/products/). ID сохранены — на них ссылаются сохранённые корзины.
@@ -115,11 +60,7 @@ categories:
         time_uz: 2–3 soat
         stock: in
         popular: true
-        # LED — пакет магазина (подсветку добавляют при установке), поэтому led on
-        # по умолчанию, хотя на эталонном фото её нет — модель дорисует по промпту.
         flags: { carbon: false, has_led: true, has_paddles: true }
-        default_config:
-          { leather: black, stitch: black, insert: leather, mark: none, led: "on", paddles: "on" }
       - id: rs
         category: rul
         name: Carbon RS
@@ -134,8 +75,6 @@ categories:
         stock: in
         popular: true
         flags: { carbon: true, has_led: false, has_paddles: true }
-        default_config:
-          { leather: black, stitch: white, insert: carbon, mark: carbon, led: "off", paddles: "on" }
       - id: sport
         category: rul
         name: BMW M Performance
@@ -149,8 +88,6 @@ categories:
         stock: in
         popular: true
         flags: { carbon: false, has_led: false, has_paddles: true }
-        default_config:
-          { leather: black, stitch: blue, insert: leather, mark: none, led: "off", paddles: "on" }
       - id: urban
         category: rul
         name: Mercedes C-Class W205
@@ -163,8 +100,6 @@ categories:
         time_uz: 2 soat
         stock: in
         flags: { carbon: false, has_led: false, has_paddles: false }
-        default_config:
-          { leather: black, stitch: white, insert: leather, mark: none, led: "off", paddles: "off" }
       - id: classic
         category: rul
         name: Chevrolet Malibu
@@ -177,8 +112,6 @@ categories:
         time_uz: 1.5–2 soat
         stock: order # под заказ, срок уточняет менеджер
         flags: { carbon: false, has_led: false, has_paddles: false }
-        default_config:
-          { leather: black, stitch: red, insert: alcantara, mark: none, led: "off", paddles: "off" }
 
   # ────────────────────────────────────────────────────────── МАГНИТОЛА
   - id: audio
