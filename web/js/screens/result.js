@@ -253,7 +253,7 @@ export const actions = {
     const serviceIds = [...(state.selectedServices || [])];
     const serviceLines = (state.services || [])
       .filter((s) => serviceIds.includes(s.id))
-      .map((s) => s.name);
+      .map((s) => (s.price ? `${s.name} · ${fmt(s.price)}` : s.name));
 
     const item = {
       uid: `${product.id}-${state.cart.length}-${Date.now()}`,
