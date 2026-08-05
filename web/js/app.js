@@ -105,7 +105,7 @@ document.addEventListener("input", (ev) => {
     setQuiet({ [key]: v });
     const wrap = el.closest(".ba");
     if (wrap) {
-      wrap.querySelector("[data-ba-after]").style.clipPath = `inset(0 ${100 - v}% 0 0)`;
+      wrap.querySelector("[data-ba-after]").style.clipPath = `inset(0 0 0 ${v}%)`;
       wrap.querySelector("[data-ba-div]").style.left = `${v}%`;
       wrap.querySelector("[data-ba-handle]").style.left = `${v}%`;
     }

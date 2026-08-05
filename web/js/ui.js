@@ -20,7 +20,7 @@ export function ba({ key, value, height = 224, before, after, beforeCap, afterCa
       ${before ? "" : `<span class="mono">${esc(beforeCap || "")}</span>`}
     </div>
     <div class="${cls(after, true)}" data-ba-after
-         style="${bg(after)};clip-path:inset(0 ${100 - value}% 0 0)">
+         style="${bg(after)};clip-path:inset(0 0 0 ${value}%)">
       ${after ? "" : `<span class="mono">${esc(afterCap || "")}</span>`}
     </div>
     <div class="divider" data-ba-div style="left:${value}%"></div>
