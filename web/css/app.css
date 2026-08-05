@@ -141,8 +141,11 @@ p{margin:0 0 14px;font-size:14px;line-height:1.45;color:var(--muted)}
    the mini-app keeps its own bounds on desktop. */
 .zoom{position:absolute;inset:0;z-index:40;background:rgba(8,9,10,.96);
   display:grid;place-items:center;padding:18px;animation:fade .18s ease}
-.zoom-inner{width:100%}
+.zoom-inner{width:100%;max-width:420px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:14px}
+.zoom-inner>*{width:100%}
 .zoom-close{position:absolute;top:12px;right:12px;z-index:41;background:var(--card2)}
+/* Action area inside the примерка overlay — a full-width column under the image. */
+.gal-actions{display:flex;flex-direction:column;gap:10px}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 
 /* Bottom sheets. Anchored to .phone like the zoom overlay. */

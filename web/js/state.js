@@ -66,6 +66,12 @@ export const state = {
   galleryView: null,
   gallerySlider: 50,
   galleryConfirmDelete: false,
+  // per-open action state for the примерка overlay
+  galleryAdding: false,
+  galleryActionError: "",
+  gallerySaved: false,
+  gallerySharing: false,
+  galleryShared: false,
 
   // showcase ("Наши работы") — the shop's public feed
   showcase: null,

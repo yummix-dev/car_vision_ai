@@ -325,7 +325,10 @@ const MESSAGES = {
     "success.sub": "Мастер позвонит в течение часа и согласует время. Ответить можно и в Telegram.",
     "success.route_note": "Адрес мастерской и маршрут придут в Telegram после подтверждения времени.",
     "success.again": "Примерить что-то ещё",
-    "success.orders": "Мои заявки",
+    "success.orders": "Мои примерки",
+    "gallery.telegram_only": "Примерки сохраняются в приложении Telegram — откройте его там, чтобы увидеть свои.",
+    "gallery.adding": "Добавляем…",
+    "gallery.unavailable": "Этого товара больше нет в каталоге.",
   },
 
   uz: {
@@ -625,7 +628,10 @@ const MESSAGES = {
     "success.sub": "Usta bir soat ichida qoʻngʻiroq qilib, vaqtni kelishadi. Telegramda ham javob berish mumkin.",
     "success.route_note": "Ustaxona manzili va marshrut vaqt tasdiqlangach Telegramda keladi.",
     "success.again": "Yana biror narsa primerka qilish",
-    "success.orders": "Mening arizalarim",
+    "success.orders": "Mening primerkalarim",
+    "gallery.telegram_only": "Primerkalar Telegram ilovasida saqlanadi — oʻzingiznikini koʻrish uchun uni oʻsha yerda oching.",
+    "gallery.adding": "Qoʻshyapmiz…",
+    "gallery.unavailable": "Bu mahsulot katalogda endi yoʻq.",
   },
 };
 

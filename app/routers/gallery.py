@@ -43,6 +43,8 @@ def _to_public(row: dict, labels: dict[str, tuple[str, str]]) -> dict | None:
     name, category_label = labels.get(row["product_id"], (row["product_id"], ""))
     return {
         "id": row["id"],
+        # Exposed so the client can re-share the render (Telegram sendPhoto needs it).
+        "job_id": row["job_id"],
         "product_id": row["product_id"],
         "product_name": name,
         "category_label": category_label,

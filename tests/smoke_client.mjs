@@ -110,7 +110,7 @@ function seedState() {
     job: { job_id: "j1", status: "done", progress: 100, step_index: 2,
       steps: ["Шаг 1", "Шаг 2", "Шаг 3"], sub: "Меняем только руль.",
       before_url: "/media/b.jpg", after_url: "/media/a.jpg", after_photo_id: "a" },
-    gallery: [{ id: 1, product_id: "amg", product_name: product.name, category_label: "Руль",
+    gallery: [{ id: 1, job_id: "j1", product_id: "amg", product_name: product.name, category_label: "Руль",
       car_label: "Chevrolet Malibu 2023", before_url: "/media/b.jpg", after_url: "/media/a.jpg", created_at: 1000 }],
     galleryView: null, galleryConfirmDelete: false,
     showcase: [{ id: 1, car_model: "Malibu", car_label: "Chevrolet Malibu 2023", category_id: "rul",
