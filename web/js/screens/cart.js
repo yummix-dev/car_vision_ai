@@ -1,68 +1,67 @@
 import { t } from "../i18n.js";
 import { icon } from "../icons.js";
-import { cartTotal, nav, setState, state } from "../state.js";
+import { carLabelShort, cartTotal, nav, setState, state } from "../state.js";
 import { esc } from "../ui.js";
 import { fmt } from "../money.js";
+
+export const title = () => t("cart.title");
 
 export function body() {
   if (!state.cart.length) {
     return `
       <h2>${t("cart.title")}</h2>
       <div class="note">${t("cart.empty")}</div>
-      <button class="cta dashed" style="margin-top:12px" data-act="addMore">${t("cart.add_first")}</button>`;
+      <button class="cta dashed" style="margin-top:14px" data-act="addMore">${t("cart.add_first")}</button>`;
   }
 
   const rows = state.cart
     .map(
       (i) => `
-    <div class="card">
-      <div class="row" style="align-items:flex-start">
-        ${
-          i.image
-            ? `<div class="thumb" style="background-image:url('${esc(i.image)}')"></div>`
-            : `<div class="ph sm thumb"><span class="mono" style="font-size:9px">[ ${esc(i.categoryLabel)} ]</span></div>`
-        }
-        <div style="flex:1">
-          <div class="micro" style="margin-bottom:3px">${esc(i.categoryLabel)}</div>
-          <h3>${esc(i.name)}</h3>
-          <div class="mut2" style="font-size:12px;margin-top:3px">${esc(i.time)}</div>
-        </div>
-        <button class="iconbtn mut2" data-act="removeItem" data-uid="${esc(i.uid)}">${icon("trash", 17)}</button>
+    <div class="card" style="display:flex;align-items:center;gap:12px">
+      ${
+        i.image
+          ? `<div class="thumb" style="background-image:url('${esc(i.image)}')"></div>`
+          : `<div class="ph sm thumb"><span class="mono" style="font-size:9px">[ ${esc(i.categoryLabel)} ]</span></div>`
+      }
+      <div style="flex:1;min-width:0">
+        <div class="micro" style="font-size:11px">${esc(i.categoryLabel)}</div>
+        <div style="font-family:var(--disp);font-size:17px;font-weight:600;line-height:1.15;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(i.name)}</div>
+        <div style="font-family:var(--disp);font-size:17px;font-weight:700;color:var(--accent);margin-top:3px">${fmt(i.total)}</div>
       </div>
-      <div class="chips" style="margin:10px 0 0">
-        ${i.chips.map((c) => `<span class="tag">${esc(c)}</span>`).join(" ")}
-        ${(i.serviceLines || []).map((s) => `<span class="tag" style="color:var(--blue)">${esc(s)}</span>`).join(" ")}
-      </div>
-      <div class="row" style="justify-content:space-between;margin-top:11px;padding-top:10px;border-top:1px solid var(--line)">
-        <span class="micro">${t("cart.price")}</span>
-        <span class="num" style="font-size:18px">${fmt(i.total)} ${t("ui.currency")}</span>
-      </div>
+      <button class="iconbtn mut2" data-act="removeItem" data-uid="${esc(i.uid)}" style="flex:none;align-self:flex-start">${icon("trash", 17)}</button>
     </div>`
     )
     .join("");
 
   return `
-    <h2>${t("cart.title")}</h2>
-    <p>${t("cart.positions_for", { n: state.cart.length, car: esc(state.carLabel) })}</p>
+    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">
+      <h2 style="margin:0">${esc(carLabelShort())}</h2><span class="mut2" style="font-size:14px">${esc(state.year)}</span>
+    </div>
+    <p>${t("cart.build_sub")}</p>
     ${rows}
     <button class="cta dashed" style="margin-top:12px" data-act="addMore">
-      ${icon("plus", 16)} ${t("cart.add_more")}</button>
-    <div class="card" style="margin-top:12px">
-      <div class="price">
-        <div class="pl"><span>${t("cart.positions")}</span><span>${state.cart.length}</span></div>
-        <div class="total"><span class="micro">${t("cart.total")}</span>
-          <span class="num">${fmt(cartTotal())} ${t("ui.currency")}</span></div>
-      </div>
+      ${icon("plus", 16)} ${t("cart.other_zone")}</button>
+    <div style="margin-top:14px">
+      <div class="row" style="justify-content:space-between;font-size:13.5px;padding:6px 0;color:var(--muted)">
+        <span>${t("cart.work")}</span><span class="incl" style="color:var(--accent);font-family:var(--disp);font-weight:600">${t("cart.work_incl")}</span></div>
+      <div class="row" style="justify-content:space-between;font-size:13.5px;padding:6px 0;color:var(--muted);border-top:1px solid var(--line)">
+        <span>${t("cart.payment")}</span><span style="color:var(--txt)">${t("cart.payment_val")}</span></div>
     </div>`;
 }
 
 export const bar = () =>
   state.cart.length
-    ? `<button class="cta" data-act="toRequest">${t("cart.checkout")}</button>`
+    ? `<div class="barsplit">
+        <div class="bartotal">
+          <span class="micro">${t("cart.positions_n", { n: state.cart.length })}</span>
+          <span class="num">${fmt(cartTotal())}</span>
+        </div>
+        <button class="cta" data-act="toRequest">${t("cart.checkout")}</button>
+      </div>`
     : "";
 
 export const actions = {
-  addMore: () => nav("pick"),
+  addMore: () => nav("home"),
   removeItem: (_ev, el) =>
     setState({ cart: state.cart.filter((i) => i.uid !== el.dataset.uid) }),
   toRequest: () => nav("request"),

@@ -2,12 +2,9 @@ import { api } from "./api.js";
 import { hasLang, t } from "./i18n.js";
 import { back, canGoBack, nav, openScreen, render, restore, setQuiet, setState, state, subscribe } from "./state.js";
 import { tg } from "./tg.js";
-import { appHeader, stepIndicator } from "./ui.js";
+import { appHeader, progressBar } from "./ui.js";
 
-import * as flow from "./screens/flow.js";
 import * as home from "./screens/home.js";
-import * as example from "./screens/example.js";
-import * as pick from "./screens/pick.js";
 import * as upload from "./screens/upload.js";
 import * as car from "./screens/car.js";
 import * as catalog from "./screens/catalog.js";
@@ -17,15 +14,13 @@ import * as result from "./screens/result.js";
 import * as cart from "./screens/cart.js";
 import * as request from "./screens/request.js";
 import * as success from "./screens/success.js";
-import * as referral from "./screens/referral.js";
 import * as lang from "./screens/lang.js";
 import * as gallery from "./screens/gallery.js";
 import * as showcase from "./screens/showcase.js";
-import * as compare from "./screens/compare.js";
 
 const SCREENS = {
-  lang, flow, home, example, pick, upload, car,
-  catalog, config, generating, result, cart, request, success, referral, gallery, showcase, compare,
+  lang, home, upload, car,
+  catalog, config, generating, result, cart, request, success, gallery, showcase,
 };
 
 const $hdr = document.getElementById("hdr");
@@ -40,11 +35,12 @@ let lastScreen = null;
 // in-app one. No-op in a browser.
 const setNativeBack = tg.onBack(() => back());
 
-const header = () =>
+const header = (screen) =>
   appHeader({
     inTelegram: tg.available,
     canBack: canGoBack(),
     cartCount: state.cart.length,
+    title: screen?.title ? screen.title() : "MyCar Vision AI",
   });
 
 function draw() {
@@ -52,8 +48,8 @@ function draw() {
   if (!screen) return;
 
   setNativeBack(canGoBack());
-  $hdr.innerHTML = header();
-  $steps.innerHTML = stepIndicator(state.screen);
+  $hdr.innerHTML = header(screen);
+  $steps.innerHTML = progressBar(state.screen);
   $scr.innerHTML = screen.body ? screen.body() : "";
   $bar.innerHTML = screen.bar ? screen.bar() : "";
   $overlay.innerHTML = screen.overlay ? screen.overlay() : "";
@@ -75,12 +71,8 @@ subscribe(draw);
 // ── Global actions available on every screen ──────────────────
 const GLOBAL = {
   back: () => back(),
-  // Utility screens remember where they were opened from, so Back returns there.
+  // The cart remembers where it was opened from, so Back returns there.
   openCart: () => openScreen("cart", "cartReturn"),
-  openReferral: () => {
-    setState({ exhaustedOpen: false, balanceOpen: false });
-    openScreen("referral", "referralReturn");
-  },
 };
 
 document.addEventListener("click", (ev) => {
@@ -149,18 +141,6 @@ document.addEventListener("input", (ev) => {
       },
     });
   }
-
-  // Attribution happens once, on the first open, before anything else can
-  // change the user's state. Failures are silent: an unattributed visit is a
-  // missed bonus, never a broken app.
-  if (tg.startParam) {
-    try {
-      await api.attribute(tg.startParam);
-    } catch {}
-  }
-  api.invitedBy()
-    .then((r) => setState({ invitedPending: Boolean(r.pending) }))
-    .catch(() => {});
 
   try {
     const [data, cfg] = await Promise.all([api.catalog(), api.config()]);

@@ -6,68 +6,85 @@ import { tg } from "../tg.js";
 import { esc } from "../ui.js";
 import { fmt } from "../money.js";
 
-const FIELDS = [
+// The optional details, revealed by the disclosure — everything but the phone.
+const EXTRA_FIELDS = [
   ["name", "request.f_name", "text", "request.f_name_ph"],
-  ["phone", "request.f_phone", "tel", "+998 __ ___ __ __"],
-  ["telegram", "request.f_tg", "text", "@username"],
   ["date", "request.f_date", "text", "request.f_date_ph"],
 ];
 
-const PAY_METHODS = [
-  ["cash", "wallet", "pay.cash"],
-  ["telegram", "card", "pay.telegram"],
-  ["uzum", "percent", "pay.uzum"],
-];
+export const title = () => t("request.hdr");
+
+function summaryLine() {
+  const names = state.cart.map((i) => i.name);
+  if (!names.length) return "";
+  if (names.length === 1) return names[0];
+  return t("request.plus_more", { first: names[0], n: names.length - 1 });
+}
 
 export function body() {
-  const fields = FIELDS.map(
-    ([key, labelKey, type, ph]) => `
-    <div class="field">
-      <label class="micro">${t(labelKey)}</label>
-      <input type="${type}" data-field="${key}" placeholder="${esc(ph.startsWith("request.") ? t(ph) : ph)}"
-        value="${esc(state.form[key])}">
-    </div>`
-  ).join("");
+  const tgNote = tg.user
+    ? `<div class="note accent">${icon("send", 16)}${esc(
+        [tg.user.fullName, tg.user.username ? `@${tg.user.username}` : ""]
+          .filter(Boolean)
+          .join(", ")
+      )} — ${t("request.from_tg")}</div>`
+    : `<div class="note">${t("request.prefill_hint")}</div>`;
+
+  const extra = state.reqExtra
+    ? EXTRA_FIELDS.map(
+        ([key, labelKey, type, ph]) => `
+        <div class="field" style="margin-top:12px">
+          <label class="micro">${t(labelKey)}</label>
+          <input type="${type}" data-field="${key}" placeholder="${esc(t(ph))}" value="${esc(state.form[key])}">
+        </div>`
+      ).join("") +
+      `<div class="field">
+        <label class="micro">${t("request.f_comment")}</label>
+        <textarea data-field="comment" placeholder="${t("request.f_comment_ph")}">${esc(state.form.comment)}</textarea>
+      </div>`
+    : "";
 
   return `
     <h2>${t("request.title")}</h2>
     <p>${t("request.lede")}</p>
 
-    <div class="card" style="margin-bottom:14px">
-      <div class="price">
-        <div class="pl"><span>${t("request.car")}</span><span>${esc(state.carLabel)}</span></div>
-        <div class="pl"><span>${t("request.positions")}</span><span>${state.cart.length}</span></div>
-        <div class="total"><span class="micro">${t("request.total")}</span>
-          <span class="num">${fmt(cartTotal())} ${t("ui.currency")}</span></div>
+    <div class="micro" style="margin-bottom:9px">${t("request.f_phone")}</div>
+    <div class="field hero">
+      <input type="tel" data-field="phone" placeholder="+998 __ ___ __ __" value="${esc(state.form.phone)}">
+    </div>
+    ${tgNote}
+
+    <div class="card" style="margin-top:16px">
+      <div class="row" style="align-items:center;gap:11px;margin-bottom:12px">
+        ${
+          state.cart[0]?.image
+            ? `<div style="width:44px;height:44px;flex:none;border-radius:10px;overflow:hidden;background:center/cover url('${esc(state.cart[0].image)}')"></div>`
+            : ""
+        }
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(summaryLine())}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">${esc(state.carLabel)}</div>
+        </div>
       </div>
+      <div class="row" style="justify-content:space-between;font-size:13px;padding:6px 0;color:var(--muted);border-top:1px solid var(--line)">
+        <span>${t("cart.work")}</span><span style="color:var(--accent);font-family:var(--disp);font-weight:600">${t("cart.work_incl")}</span></div>
+      <div class="row" style="justify-content:space-between;align-items:baseline;padding-top:9px;border-top:1px solid var(--line);margin-top:5px">
+        <span class="micro">${t("request.total")}</span>
+        <span class="num" style="font-size:23px">${fmt(cartTotal())}</span></div>
     </div>
 
-    <label class="micro" style="display:block;margin-bottom:8px">${t("pay.title")}</label>
-    <div class="payopts" style="margin-bottom:16px">
-      ${PAY_METHODS.map(
-        ([id, ic, label]) => `<button class="payopt ${state.paymentMethod === id ? "on" : ""}"
-          data-act="setPay" data-id="${id}">${icon(ic, 18)}<span>${t(label)}</span></button>`
-      ).join("")}
-    </div>
-
-    ${fields}
-    <div class="field">
-      <label class="micro">${t("request.f_comment")}</label>
-      <textarea data-field="comment" placeholder="${t("request.f_comment_ph")}">${esc(state.form.comment)}</textarea>
-    </div>
-    ${state.formError ? `<div class="note" style="color:var(--red)">${esc(state.formError)}</div>` : ""}
-    ${
-      tg.user
-        ? `<div class="note blue">${t("request.prefill")}</div>`
-        : `<div class="note">${t("request.prefill_hint")}</div>`
-    }`;
+    <button class="disclosure ${state.reqExtra ? "open" : ""}" data-act="toggleExtra">
+      ${t("request.add_details")} ${icon("next", 15)}</button>
+    ${extra}
+    ${state.formError ? `<div class="note" style="color:var(--red)">${esc(state.formError)}</div>` : ""}`;
 }
 
-export const bar = () =>
-  `<button class="cta" data-act="submit">${t("request.submit")}</button>`;
+export const bar = () => `
+  <button class="cta" data-act="submit">${t("request.submit")}</button>
+  <div style="text-align:center;color:var(--muted);font-size:12px">${t("request.no_pay")}</div>`;
 
 export const actions = {
-  setPay: (_ev, el) => setState({ paymentMethod: el.dataset.id }),
+  toggleExtra: () => setState({ reqExtra: !state.reqExtra }),
 
   submit: async () => {
     if (!state.form.phone.trim()) {
@@ -89,12 +106,6 @@ export const actions = {
         payment_method: state.paymentMethod,
       });
       setState({ booking, formError: "" });
-      // A live provider (Phase 2) hands back an invoice/redirect to open; today
-      // every method returns "manager", so we go straight to the confirmation.
-      const action = booking.payment || { kind: "manager" };
-      if ((action.kind === "invoice" || action.kind === "redirect") && action.url) {
-        window.open(action.url, "_blank"); // Phase 2: tg.openInvoice for invoices
-      }
       nav("success");
     } catch (e) {
       setState({ formError: e.message });

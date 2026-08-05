@@ -5,49 +5,28 @@ import { icon } from "../icons.js";
 import { currentCategory, nav, setState, state } from "../state.js";
 import { esc } from "../ui.js";
 
+// [id, icon, i18n label, primary?] — the camera is the primary path, drawn with
+// a filled lime tile; gallery and demo are secondary.
 const SOURCES = [
-  ["camera", "camera", "upload.src_camera"],
-  ["gallery", "gallery", "upload.src_gallery"],
-  ["demo", "demo", "upload.src_demo"],
+  ["camera", "camera", "upload.src_camera", true],
+  ["gallery", "gallery", "upload.src_gallery", false],
+  ["demo", "demo", "upload.src_demo", false],
 ];
 
-const TIP_KEYS = ["upload.tip1", "upload.tip2", "upload.tip3", "upload.tip4"];
+export const title = () => currentCategory()?.noun_cap || currentCategory()?.label || "";
 
 export function body() {
   const cat = currentCategory();
-  const hasPreview = Boolean(state.photoId);
-
-  if (hasPreview) {
-    return `
-      <h2>${esc(cat?.shoot_title || "")}</h2>
-      <p>${t("upload.subtitle")}</p>
-      <div style="position:relative;height:260px;border-radius:var(--r-lg);overflow:hidden;
-        background:#131922 center/cover url('${esc(state.photoUrl)}')">
-        <span class="pill in" style="position:absolute;top:10px;left:10px">${esc(cat?.noun_cap || "")} ${t("upload.in_frame")}</span>
-      </div>
-      <div class="row" style="margin-top:12px">
-        <button class="btn" style="flex:1" data-act="clearPhoto">${t("upload.replace")}</button>
-        <button class="btn" style="flex:1" data-act="rotate" ${state.rotating ? "disabled" : ""}>
-          ${state.rotating ? t("upload.rotating") : t("upload.rotate")}</button>
-      </div>
-      ${state.uploadError ? `<div class="note" style="color:var(--red)">${esc(state.uploadError)}</div>` : ""}`;
-  }
 
   const rows = SOURCES.map(
-    ([id, ic, key]) => `
-    <button class="card" style="width:100%;text-align:left;cursor:pointer;display:flex;align-items:center;gap:12px"
+    ([id, ic, key, primary]) => `
+    <button class="card" style="width:100%;text-align:left;cursor:pointer;display:flex;align-items:center;gap:13px;margin-bottom:10px"
       data-act="pickSource" data-src="${id}">
-      <span style="width:38px;height:38px;border-radius:11px;background:var(--card2);
-        display:grid;place-items:center;color:var(--blue);flex:none">${icon(ic, 19)}</span>
-      <span style="flex:1;font-size:14.5px">${t(key)}</span>
+      <span style="width:40px;height:40px;border-radius:11px;flex:none;display:grid;place-items:center;
+        ${primary ? "background:var(--accent);color:var(--accentInk)" : "background:var(--card2);color:var(--accent)"}">${icon(ic, 20)}</span>
+      <span style="flex:1;font-size:15px;font-weight:500">${t(key)}</span>
       <span class="mut2">${icon("next", 17)}</span>
     </button>`
-  ).join("");
-
-  const tips = TIP_KEYS.map(
-    (key) => `<div class="row" style="padding:6px 0">
-      <span style="color:var(--green);display:grid;place-items:center">${icon("check", 15, 2.4)}</span>
-      <span style="font-size:13px;color:var(--muted)">${t(key)}</span></div>`
   ).join("");
 
   return `
@@ -55,14 +34,23 @@ export function body() {
     <p>${t("upload.subtitle")}</p>
     ${rows}
     ${state.uploadError ? `<div class="note" style="color:var(--red)">${esc(state.uploadError)}</div>` : ""}
-    <div class="card" style="margin-top:14px">
-      <div class="micro" style="margin-bottom:6px">${t("upload.tips_title")}</div>${tips}
+    <div class="micro" style="margin:22px 0 10px">${t("upload.tips_title")}</div>
+    <div class="row" style="gap:10px;align-items:stretch">
+      <div style="flex:1;border-radius:12px;overflow:hidden;position:relative;height:96px;background:center/cover url('/img/example/before.jpg')">
+        <span style="position:absolute;left:8px;bottom:8px;background:var(--accent);color:var(--accentInk);font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:6px">${t("upload.eg_ok")}</span>
+      </div>
+      <div style="flex:1;border-radius:12px;overflow:hidden;position:relative;height:96px;background:center/cover url('/img/example/before.jpg');filter:grayscale(1) brightness(.55)">
+        <span style="position:absolute;left:8px;bottom:8px;background:var(--card2);color:var(--muted);font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:6px">${t("upload.eg_bad")}</span>
+      </div>
     </div>
     <input type="file" id="filepick" accept="image/*" hidden>`;
 }
 
-export const bar = () => `
-  <button class="cta" data-act="goCar" ${state.photoId ? "" : "disabled"}>${t("upload.continue")}</button>`;
+/** Move on to the car-selection screen once a photo exists. */
+function advance() {
+  setState({ carField: null });
+  nav("car");
+}
 
 export const actions = {
   pickSource: async (_ev, el) => {
@@ -80,6 +68,7 @@ export const actions = {
           category_id: currentCategory()?.id,
           payload: { source: "demo" },
         });
+        advance();
       } catch (e) {
         setState({ uploadError: e.message });
       }
@@ -93,32 +82,6 @@ export const actions = {
     else input.removeAttribute("capture");
     input.dataset.src = src;
     input.click();
-  },
-
-  // Which source people actually use decides whether the camera path is worth
-  // its complexity.
-  clearPhoto: () =>
-    setState({ photoSource: "", photoId: null, photoUrl: null, uploadError: "" }),
-
-  rotate: async () => {
-    if (!state.photoId || state.rotating) return;
-    setState({ rotating: true, uploadError: "" });
-    try {
-      const photo = await api.rotatePhoto(state.photoId);
-      setState({
-        photoId: photo.photo_id,
-        photoUrl: photo.url,
-        rotating: false,
-      });
-    } catch (e) {
-      setState({ rotating: false, uploadError: e.message });
-    }
-  },
-
-  goCar: () => {
-    if (!state.photoId) return;
-    setState({ analyzing: true, carEditing: false });
-    nav("car");
   },
 };
 
@@ -143,6 +106,7 @@ export function afterRender() {
         category_id: currentCategory()?.id,
         payload: { source },
       });
+      advance();
     } catch (e) {
       setState({ uploadError: e.message });
     }

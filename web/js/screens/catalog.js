@@ -36,6 +36,8 @@ function visibleProducts(cat) {
   }
 }
 
+export const title = () => currentCategory()?.label || "";
+
 export function body() {
   const cat = currentCategory();
   if (!cat) return `<p>${t("catalog.no_section")}</p>`;
@@ -53,23 +55,14 @@ export function body() {
     : `<div class="note">${t("catalog.empty_filter")}</div>`;
 
   return `
-    <div class="row" style="justify-content:space-between;margin-bottom:10px">
-      <span class="eyebrow" style="margin:0">${esc(cat.label)}</span>
-      <a href="#" data-act="toPick">${t("catalog.change_section")}</a>
-    </div>
-    <h2>${esc(cat.title)} ${esc(state.brand)} ${esc(state.model)}</h2>
-    <p>${esc(cat.sub)}</p>
+    <h2 style="margin-bottom:4px">${esc(cat.title)}</h2>
+    <p style="font-size:13px">${esc(cat.sub)}</p>
     ${filters}
     ${cards}`;
 }
 
 export const actions = {
   setFilter: (_ev, el) => setState({ filter: el.dataset.id }),
-
-  toPick: (ev) => {
-    ev.preventDefault();
-    nav("pick");
-  },
 
   openProduct: async (_ev, el) => {
     const cat = currentCategory();

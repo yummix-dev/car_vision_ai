@@ -4,6 +4,8 @@ import { icon } from "../icons.js";
 import { nav, setState, state } from "../state.js";
 import { ba, esc } from "../ui.js";
 
+export const title = () => t("showcase.title");
+
 // Public feed of the shop's real installs — social proof. Read-only; builds are
 // curated in /admin. Each card can jump into the funnel for its zone.
 function card(b) {

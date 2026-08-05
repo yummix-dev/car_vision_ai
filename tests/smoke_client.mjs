@@ -2,13 +2,13 @@
 // Node with minimal browser shims, and fails on any thrown error.
 //
 // pytest cannot see client JS: a dangling reference like `STEP_LABELS` (renamed
-// to STEP_KEYS but missed on one line) threw only at render time and silently
-// broke the whole funnel past `home`. This runs the real render code so that
-// class of bug fails a test instead of shipping.
+// but missed on one line), or a screen using t() without importing it, throws
+// only at render time and silently breaks the funnel past `home`. This runs the
+// real render code so that class of bug fails a test instead of shipping.
 //
-// It is a smoke test, not a DOM test: it calls body()/bar()/overlay()/
-// stepIndicator() and the quota sheets with a realistic mid-funnel state and
-// asserts none of them throw. It does not simulate clicks.
+// It is a smoke test, not a DOM test: it calls body()/bar()/overlay()/title()
+// and the shared ui helpers with a realistic mid-funnel state and asserts none
+// of them throw. It does not simulate clicks.
 
 // ── browser-global shims (must run before importing the client modules) ──
 const makeStore = () => {
@@ -29,14 +29,14 @@ const base = new URL("../web/js/", import.meta.url);
 const load = (p) => import(new URL(p, base).href);
 
 const ui = await load("ui.js");
-const quota = await load("quota.js");
 const { state, defaultSelections } = await load("state.js");
 const { setLang } = await load("i18n.js");
 
+// The v2 architecture: entry is the zone grid; photo and manual car selection
+// are two screens; payments/quota/referrals/compare are gone.
 const SCREEN_NAMES = [
-  "lang", "flow", "home", "example", "pick", "upload", "car", "catalog",
-  "config", "generating", "result", "cart", "request", "success",
-  "referral", "gallery", "showcase", "compare",
+  "lang", "home", "upload", "car", "catalog", "config",
+  "generating", "result", "cart", "request", "success", "gallery", "showcase",
 ];
 const screens = {};
 for (const n of SCREEN_NAMES) screens[n] = await load(`screens/${n}.js`);
@@ -84,15 +84,16 @@ const audio = {
       flags: {}, default_config: {} },
   ],
 };
-const catalog = { categories: [rul, audio], car_options: { brands: ["Chevrolet"], models: ["Malibu"], years: [2023] } };
+const catalog = { categories: [rul, audio], car_options: { brands: ["Chevrolet", "BMW"], models: ["Malibu", "X5"], years: [2022, 2023] } };
 
 // ── mid-funnel state, everything populated so conditional paths render ──
 function seedState() {
   const product = rul.products[0];
   Object.assign(state, {
     catalog,
-    config: { bot_username: "bot", app_name: "app", currency: "сум" },
+    config: { bot_username: "bot", app_name: "app", currency: "сум", telegram_bot_username: "bot" },
     brand: "Chevrolet", model: "Malibu", year: 2023, carLabel: "Chevrolet Malibu 2023",
+    carField: null,
     category: "rul", filter: "pop", productId: "amg",
     selections: defaultSelections(rul, product),
     services: [{ id: 1, name: "Установка", price: 500000, default_on: true }],
@@ -109,39 +110,21 @@ function seedState() {
     job: { job_id: "j1", status: "done", progress: 100, step_index: 2,
       steps: ["Шаг 1", "Шаг 2", "Шаг 3"], sub: "Меняем только руль.",
       before_url: "/media/b.jpg", after_url: "/media/a.jpg", after_photo_id: "a" },
-    balance: {
-      metered: true, next_charge: "free",
-      current: { category_id: "rul", free_remaining: 2, free_limit: 3 },
-      bonus_remaining: 1,
-      categories: { rul: { free_remaining: 2, free_limit: 3 }, audio: { free_remaining: 3, free_limit: 3 } },
-    },
-    balanceHistory: [{ created_at: 1000, transaction_type: "spend", amount: 1, balance_type: "free" }],
-    referral: { available: true, invited: 2, qualified: 1, bonus_earned: 3, monthly_remaining: 5, link: "https://t.me/bot/app?startapp=ref_ABC" },
-    referralCopied: true, invitedPending: true,
-    codeInput: "ABC123", codeError: "", codeResult: { bonus_amount: 2, restored_free: 1 },
     gallery: [{ id: 1, product_id: "amg", product_name: product.name, category_label: "Руль",
       car_label: "Chevrolet Malibu 2023", before_url: "/media/b.jpg", after_url: "/media/a.jpg", created_at: 1000 }],
-    galleryView: null,
+    galleryView: null, galleryConfirmDelete: false,
     showcase: [{ id: 1, car_model: "Malibu", car_label: "Chevrolet Malibu 2023", category_id: "rul",
       category_label: "Руль", title: "Руль Mercedes-AMG", before_url: "/media/b.jpg", after_url: "/media/a.jpg" }],
     showcaseFilter: "",
-    compareBase: {
-      productId: "rs", selections: {},
-      job: { job_id: "j0", after_url: "/media/a0.jpg", before_url: "/media/b.jpg" },
-      breakdown: { product_name: "Carbon RS", total: 6900000, total_formatted: "6 900 000", lines: [] },
-    },
-    comparePickOpen: false, comparing: false,
     cart: [{ uid: "x1", productId: "amg", categoryLabel: "Руль", name: product.name, time: "2–3 часа",
       total: 6650000, selections: { leather: "black" }, serviceIds: [1], serviceLines: ["Установка"],
       chips: ["LED-подсветка"], image: "/media/a.jpg" }],
     form: { name: "Иван", phone: "+998900000000", telegram: "@ivan", date: "", comment: "" },
-    paymentMethod: "uzum",
-    booking: { booking_id: "bk1", status: "received", positions: 1, total: 6650000,
-      total_formatted: "6 650 000", car_label: "Chevrolet Malibu 2023",
-      payment_method: "uzum", payment: { kind: "manager", url: "" } },
+    reqExtra: false, paymentMethod: "cash",
+    booking: { booking_id: 214, status: "received", positions: 1, total: 6650000,
+      total_formatted: "6 650 000", car_label: "Chevrolet Malibu 2023", payment_method: "cash" },
     saved: true, shared: false, sharing: false, resultError: "",
-    zoomOpen: false, balanceOpen: false, exhaustedOpen: false, bonusConfirmOpen: false, codeOpen: false,
-    homeSlider: 44, exSlider: 50, resultSlider: 50, zoomSlider: 50,
+    zoomOpen: false, resultSlider: 50, zoomSlider: 50, gallerySlider: 50,
   });
 }
 
@@ -156,49 +139,60 @@ for (lang of ["ru", "uz"]) {
   setLang(lang);
   seedState();
 
-  // stepIndicator for every screen — where STEP_LABELS threw.
-  for (const n of SCREEN_NAMES) run(`stepIndicator(${n})`, () => ui.stepIndicator(n));
+  // Progress bar for every screen — where the step-indicator refactor lived.
+  for (const n of SCREEN_NAMES) run(`progressBar(${n})`, () => ui.progressBar(n));
 
   // Each screen's render functions.
   for (const n of SCREEN_NAMES) {
     const s = screens[n];
     state.screen = n;
+    if (s.title) run(`${n}.title`, () => s.title());
     if (s.body) run(`${n}.body`, () => s.body());
     if (s.bar) run(`${n}.bar`, () => s.bar());
     if (s.overlay) run(`${n}.overlay`, () => s.overlay());
   }
 
+  // Car screen: each of the three field-pickers open.
+  for (const key of ["brand", "model", "year"]) {
+    state.carField = key;
+    run(`car.body(field=${key})`, () => screens.car.body());
+  }
+  state.carField = null;
+
   // Gated overlays and alternate states.
   state.zoomOpen = true; run("result.overlay(zoom open)", () => screens.result.overlay());
-  state.comparePickOpen = true; run("result.overlay(compare pick)", () => screens.result.overlay());
-  state.comparePickOpen = false;
+  state.zoomOpen = false;
   state.galleryView = state.gallery[0];
   run("gallery.overlay(view)", () => screens.gallery.overlay());
   state.galleryConfirmDelete = true;
   run("gallery.overlay(confirm delete)", () => screens.gallery.overlay());
+  state.galleryView = null; state.galleryConfirmDelete = false;
   state.job = { ...state.job, status: "error", error: "boom", progress: 0, step_index: 0 };
   run("generating.body(error)", () => screens.generating.body());
   run("generating.bar(error)", () => screens.generating.bar());
 
+  // The optional details section on the request screen, expanded.
+  state.reqExtra = true; run("request.body(details open)", () => screens.request.body());
+  state.reqExtra = false;
+
+  // Empty-cart path.
+  const savedCart = state.cart; state.cart = [];
+  run("cart.body(empty)", () => screens.cart.body());
+  run("cart.bar(empty)", () => screens.cart.bar());
+  state.cart = savedCart;
+
   // Non-wheel catalog path.
   state.category = "audio"; state.productId = "au1"; state.filter = "pop";
   run("catalog.body(non-wheel)", () => screens.catalog.body());
-
-  // quota sheets (all touched by the i18n refactor).
-  run("quota.buttonSuffix", () => quota.buttonSuffix());
-  run("quota.balanceChip", () => quota.balanceChip("Руль"));
-  state.balanceOpen = true; run("quota.balanceSheet", () => quota.balanceSheet());
-  state.exhaustedOpen = true; run("quota.exhaustedSheet", () => quota.exhaustedSheet());
-  state.codeOpen = true; run("quota.codeSheet", () => quota.codeSheet());
-  run("quota.invitedNote", () => quota.invitedNote());
-  state.bonusConfirmOpen = true; run("quota.bonusConfirmSheet", () => quota.bonusConfirmSheet());
+  run("config.body(non-wheel)", () => screens.config.body());
 
   // A few ui helpers directly.
   run("ui.productCard", () => ui.productCard(rul.products[0]));
-  run("ui.categoryCard", () => ui.categoryCard(rul));
+  run("ui.zoneCard", () => { ui.zoneCard(rul); ui.zoneCard(audio, true); });
   run("ui.priceBlock", () => ui.priceBlock(state.breakdown));
   run("ui.stockPill", () => { ui.stockPill("in"); ui.stockPill("order"); });
-  run("ui.appHeader", () => ui.appHeader({ inTelegram: false, canBack: true, cartCount: 1 }));
+  run("ui.appHeader", () => ui.appHeader({ inTelegram: false, canBack: true, cartCount: 1, title: "Руль" }));
+  run("ui.appHeader(telegram)", () => ui.appHeader({ inTelegram: true, canBack: true, cartCount: 0, title: "Руль" }));
 }
 
 if (failures.length) {

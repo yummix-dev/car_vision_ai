@@ -20,10 +20,9 @@ export const bar = () => `
 function choose(lang) {
   setLang(lang);
   // Refetch the catalog so its labels come back in the chosen language, then
-  // continue into the funnel (or back home if the user was just switching).
-  const dest = state.langReturn || "flow";
-  setState({ lang, langReturn: null });
-  window.dispatchEvent(new CustomEvent("lang-changed", { detail: { dest } }));
+  // land on the zone grid.
+  setState({ lang });
+  window.dispatchEvent(new CustomEvent("lang-changed", { detail: { dest: "home" } }));
 }
 
 export const actions = {

@@ -1,15 +1,13 @@
-// The screen/history state machine, ported from the prototype.
-// No router: `screen` is a string and `history` is a stack.
+// The screen/history state machine. No router: `screen` is a string and back
+// navigation is a per-screen target, not a free-form stack.
 
 import { track } from "./analytics.js";
 import { getLang } from "./i18n.js";
 
 export const state = {
-  screen: "flow",
+  screen: "home",
   lang: getLang(), // null until chosen — boot routes to the language screen then
-  // Where cart/referral return to when closed — set as they are opened.
-  cartReturn: null,
-  referralReturn: null,
+  cartReturn: null, // where the cart returns to when closed
 
   catalog: null,
   config: null, // public server settings: /api/config
@@ -19,8 +17,7 @@ export const state = {
   model: "Malibu",
   year: 2023,
   carLabel: "Chevrolet Malibu 2023",
-  analyzing: false,
-  carEditing: false,
+  carField: null, // which of brand/model/year has its picker open (null = none)
 
   // photo
   photoSource: "", // camera | gallery | demo
@@ -43,25 +40,6 @@ export const state = {
   job: null,
   generationKey: null, // one idempotency key per attempt
 
-  // AI try-on balance, server-owned. The client only displays it.
-  balance: null,
-  balanceHistory: null,
-  balanceOpen: false,
-  exhaustedOpen: false,
-  bonusConfirmOpen: false,
-
-  // reward codes
-  codeOpen: false,
-  codeInput: "",
-  codeError: "",
-  codeBusy: false,
-  codeResult: null,
-
-  // referrals
-  referral: null,
-  referralCopied: false,
-  invitedPending: false, // this user still owes their inviter a first try-on
-
   // result — `saved`/`shared` are set only after the action actually succeeded
   saved: false,
   shared: false,
@@ -70,33 +48,29 @@ export const state = {
   zoomOpen: false,
 
   // sliders
-  homeSlider: 44,
-  exSlider: 50,
   resultSlider: 50,
   zoomSlider: 50,
 
   cart: [],
+  // A single required field (phone); name/telegram prefill from Telegram, date
+  // and comment are optional behind the "add details" disclosure.
   form: { name: "", phone: "", telegram: "", date: "", comment: "" },
-  paymentMethod: "cash", // cash | telegram | uzum
+  reqExtra: false, // is the optional date/comment section expanded
+  paymentMethod: "cash", // settled with the master on site; sent for the booking record
+  formError: "",
   booking: null,
 
-  // gallery ("Мои примерки") — null until loaded on entry
+  // gallery ("Мои примерки")
   gallery: null,
   galleryError: "",
-  galleryView: null, // the render open in the full-screen overlay
+  galleryView: null,
   gallerySlider: 50,
   galleryConfirmDelete: false,
 
-  // showcase ("Реальные сборки") — the shop's public feed, null until loaded
+  // showcase ("Наши работы") — the shop's public feed
   showcase: null,
   showcaseError: "",
-  showcaseFilter: "", // "" = all car models
-
-  // side-by-side compare — a snapshot of the first result to compare against,
-  // and a flag so the generation of the second variant routes to `compare`
-  compareBase: null,
-  comparing: false,
-  comparePickOpen: false,
+  showcaseFilter: "",
 };
 
 const listeners = new Set();
@@ -118,8 +92,7 @@ export function setState(patch) {
 // ── persistence ───────────────────────────────────────────────
 //
 // Only what a customer would be annoyed to retype. Deliberately NOT the photo,
-// the job or the balance: photos expire with the media sweep, and a balance
-// read from the browser would be a balance the customer can edit.
+// the job or the balance.
 
 const STORE_KEY = "mcv_cart";
 const PERSISTED = ["cart", "form", "brand", "model", "year", "carLabel"];
@@ -177,46 +150,34 @@ export function setQuiet(patch) {
 }
 
 // Where "back" goes from each screen — the logical parent, not the literal path
-// that led here. A free-form stack replayed the whole funnel (result → config →
-// catalog → car → upload → pick → home = seven presses for one render); this
-// keeps back short and predictable.
-//
-// The shopping screens (catalog/config/result) back out to a single anchor
-// rather than stepping back down through setup — changing photo, car or category
-// is done through explicit buttons ("Сменить раздел", "Другой товар"), so
-// replaying those steps one-by-one on Back is just noise. null = terminal.
+// that led here. The shopping screens back out to a single anchor (cart if the
+// build has lines, otherwise home) rather than stepping back down through setup.
+// null = terminal.
 const anchor = () => (state.cart.length ? "cart" : "home");
 
 const BACK_TARGET = {
-  flow: () => null,
+  lang: () => null,
   home: () => null,
-  example: () => "home",
-  pick: anchor,
-  upload: () => "pick",
+  upload: () => "home",
   car: () => "upload",
   catalog: anchor,
   config: () => "catalog",
   generating: () => "config",
   result: () => "config",
-  compare: () => "result",
   cart: () => state.cartReturn || "home",
   request: () => "cart",
   success: () => null, // a submitted booking is done — no way back into it
-  referral: () => state.referralReturn || "home",
   gallery: () => "home",
   showcase: () => "home",
 };
 
 export function nav(screen) {
   state.screen = screen;
-  // Every screen change reports here, so no screen can be forgotten when one is
-  // added later.
   track("screen_view", { screen });
   render();
 }
 
-/** Kept as an alias: with target-based back there is no stack to avoid pushing
- *  to, but call sites read clearer when an auto-advance says `replace`. */
+/** Kept as an alias: call sites read clearer when an auto-advance says `replace`. */
 export const replace = nav;
 
 /** Open a utility screen that should return to wherever it was opened from. */
@@ -228,15 +189,13 @@ export function openScreen(screen, returnKey) {
 /** Leave the funnel entirely — a fresh root with nothing behind it. */
 export function reset(screen) {
   state.cartReturn = null;
-  state.referralReturn = null;
   nav(screen);
 }
 
 export function back() {
   const target = BACK_TARGET[state.screen]?.();
   if (!target) return;
-  state.analyzing = false;
-  state.carEditing = false;
+  state.carField = null;
   nav(target);
 }
 

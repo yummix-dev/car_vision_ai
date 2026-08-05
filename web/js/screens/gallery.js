@@ -4,6 +4,8 @@ import { icon } from "../icons.js";
 import { nav, setState, state } from "../state.js";
 import { ba, esc } from "../ui.js";
 
+export const title = () => t("gallery.title");
+
 /** created_at (unix seconds) → "DD.MM.YYYY". */
 function fmtDate(sec) {
   const d = new Date((sec || 0) * 1000);
@@ -88,7 +90,7 @@ export const actions = {
   },
   closeItem: () => setState({ galleryView: null, galleryConfirmDelete: false }),
   confirmDelete: () => setState({ galleryConfirmDelete: true }),
-  toPick: () => nav("pick"),
+  toPick: () => nav("home"),
 
   doDelete: async () => {
     const item = state.galleryView;

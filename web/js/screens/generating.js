@@ -2,7 +2,6 @@ import { track } from "../analytics.js";
 import { api } from "../api.js";
 import { t } from "../i18n.js";
 import { icon } from "../icons.js";
-import { refreshBalance } from "../quota.js";
 import {
   currentCategory,
   nav,
@@ -13,6 +12,8 @@ import {
   state,
 } from "../state.js";
 import { esc } from "../ui.js";
+
+export const title = () => currentCategory()?.noun_cap || currentCategory()?.label || "";
 
 export function body() {
   const job = state.job;
@@ -97,7 +98,6 @@ export const actions = {
   retry: () => {
     setState({
       photoSource: "", photoId: null, photoUrl: null, job: null, jobId: null,
-      comparing: false, compareBase: null,
     });
     nav("upload");
   },
@@ -141,9 +141,6 @@ async function poll() {
     }
 
     if (job.status === "done" || job.status === "error") {
-      // The server has settled the reservation by now — a failure refunded it,
-      // so re-read rather than guessing what was charged.
-      refreshBalance(currentCategory()?.id);
       track(job.status === "done" ? "generation_done" : "generation_failed", {
         category_id: currentCategory()?.id,
         product_id: state.productId,
@@ -154,8 +151,7 @@ async function poll() {
       setQuiet({ job }); // result reads state.job; no need to rebuild this screen
       // Replace rather than push, so Back from the result skips this screen.
       await new Promise((r) => setTimeout(r, 350));
-      // A compare run lands on the side-by-side screen instead of the result.
-      replace(state.comparing ? "compare" : "result");
+      replace("result");
       return;
     }
     if (job.status === "error") {

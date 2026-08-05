@@ -1,106 +1,106 @@
 import { track } from "../analytics.js";
 import { api } from "../api.js";
 import { t } from "../i18n.js";
-import { nav, setState, state } from "../state.js";
+import { icon } from "../icons.js";
+import { currentCategory, nav, setState, state } from "../state.js";
 import { esc } from "../ui.js";
 
+export const title = () => currentCategory()?.noun_cap || currentCategory()?.label || "";
+
+// The three vehicle fields the customer sets by hand. `list` names the array in
+// the catalog's car_options; `state` names the field they write.
+const FIELDS = [
+  { key: "brand", labelKey: "car.brand", list: "brands", wide: false },
+  { key: "model", labelKey: "car.model", list: "models", wide: false },
+  { key: "year", labelKey: "car.f_year", list: "years", wide: true },
+];
+
+const carOptions = () =>
+  state.catalog?.car_options || { brands: [], models: [], years: [] };
+
+function fieldCard(f) {
+  const open = state.carField === f.key;
+  return `
+    <button class="carfield${open ? " on" : ""}${f.wide ? " wide" : ""}"
+      data-act="openField" data-key="${f.key}">
+      <span class="cf-lbl">${t(f.labelKey)}</span>
+      <span class="cf-val">${esc(state[f.key])}</span>
+    </button>`;
+}
+
+function picker() {
+  const f = FIELDS.find((x) => x.key === state.carField);
+  if (!f) return "";
+  const list = carOptions()[f.list] || [];
+  const chips = list
+    .map(
+      (v) => `<button class="chip ${String(state[f.key]) === String(v) ? "on" : ""}"
+        data-act="setCar" data-key="${f.key}" data-v="${esc(v)}">${esc(v)}</button>`
+    )
+    .join("");
+  return `<div class="card" style="margin-top:8px">
+    <div class="micro" style="margin-bottom:10px">${t(f.labelKey)}</div>
+    <div class="chips">${chips}</div>
+  </div>`;
+}
+
 export function body() {
-  if (state.analyzing) {
-    return `
-      <div style="display:grid;place-items:center;gap:16px;padding:70px 0">
-        <div class="spinner"></div>
-        <h2 style="text-align:center;margin:0">${t("car.analyzing_title")}</h2>
-        <div class="mut" style="text-align:center;font-size:13.5px">${t("car.analyzing_sub")}</div>
-      </div>`;
-  }
-
-  if (state.carEditing) {
-    const opts = state.catalog?.car_options || { brands: [], models: [], years: [] };
-    const row = (label, list, key) => `
-      <div style="padding:11px 0;border-top:1px solid var(--line)">
-        <div class="micro" style="margin-bottom:9px">${label}</div>
-        <div class="chips">${list
-          .map(
-            (v) => `<button class="chip ${String(state[key]) === String(v) ? "on" : ""}"
-              data-act="setCar" data-key="${key}" data-v="${esc(v)}">${esc(v)}</button>`
-          )
-          .join("")}</div>
-      </div>`;
-    return `
-      <h2>${t("car.confirm_title")}</h2>
-      <p>${t("car.confirm_sub")}</p>
-      <div class="card" style="padding:2px 14px 12px">
-        ${row(t("car.brand"), opts.brands, "brand")}
-        ${row(t("car.model"), opts.models, "model")}
-        ${row(t("car.year"), opts.years, "year")}
-      </div>`;
-  }
+  const cat = currentCategory();
 
   return `
-    <h2>${t("car.likely")}</h2>
-    <div style="height:200px;border-radius:var(--r-lg);overflow:hidden;margin-bottom:14px;
-      background:#131922 center/cover url('${esc(state.photoUrl || "")}')"></div>
-    <div class="card">
-      <h3 style="font-size:22px">${esc(state.carLabel)}</h3>
-      <div style="margin-top:10px"><span class="pill in">${t("car.compatible_found")}</span></div>
+    <h2>${t("car.photo_title")}</h2>
+    <div style="position:relative;height:190px;border-radius:var(--r-lg);overflow:hidden;
+      background:#22252a center/cover url('${esc(state.photoUrl || "")}')">
+      <span style="position:absolute;top:10px;left:10px;display:inline-flex;align-items:center;gap:7px;
+        font-family:var(--disp);font-size:11.5px;letter-spacing:.6px;text-transform:uppercase;border-radius:20px;
+        padding:5px 11px;background:rgba(16,17,19,.7);color:var(--accent)">
+        <span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>${esc(cat?.noun_cap || "")} ${t("upload.in_frame")}</span>
+      <button class="iconbtn" data-act="replace"
+        style="position:absolute;bottom:8px;right:8px;min-height:44px;background:rgba(16,17,19,.75);color:var(--txt);
+        border-radius:12px;padding:0 14px;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:7px;font-family:var(--body)">
+        ${icon("refresh", 15)}${t("upload.replace")}</button>
     </div>
-    <div class="note">${t("car.wrong_hint")}</div>`;
+
+    <div class="micro" style="margin:16px 0 9px">${t("car.your_car")}</div>
+    <div class="carfields">
+      ${FIELDS.map(fieldCard).join("")}
+    </div>
+    ${picker()}
+    <div class="note accent">${t("car.match_hint", { plural: esc(cat?.title || cat?.label || "") })}</div>`;
 }
 
-export function bar() {
-  if (state.analyzing) return "";
-  if (state.carEditing)
-    return `<button class="cta" data-act="confirmCar">${t("car.confirm")}</button>`;
-  return `
-    <button class="cta" data-act="acceptCar">${t("car.accept")}</button>
-    <button class="cta sec" data-act="editCar">${t("car.edit")}</button>`;
-}
+export const bar = () =>
+  `<button class="cta" data-act="acceptCar">${t("car.show", { plural: esc(currentCategory()?.title || "") })}</button>`;
 
 export const actions = {
-  editCar: () => setState({ carEditing: true }),
+  // Re-pick the photo: back to the source screen.
+  replace: () => {
+    setState({ carField: null, photoId: null, photoUrl: null, photoSource: "" });
+    nav("upload");
+  },
+
+  // Tapping a field opens (or closes) its chip picker; only one is open at a time.
+  openField: (_ev, el) => {
+    const key = el.dataset.key;
+    setState({ carField: state.carField === key ? null : key });
+  },
 
   setCar: (_ev, el) => {
     const { key, v } = el.dataset;
-    setState({ [key]: key === "year" ? Number(v) : v });
+    setState({ [key]: key === "year" ? Number(v) : v, carField: null });
   },
 
-  confirmCar: async () => {
-    // The manual correction path never calls the model — it is the recovery
-    // route for when recognition gets it wrong. Tracked separately from
-    // acceptance: a high correction rate means recognition is the weak link.
-    track("vehicle_corrected");
+  acceptCar: async () => {
+    track("vehicle_confirmed");
+    // The car is entirely user-chosen now — canonicalise the label on the server
+    // (also records the vehicle), falling back to a local label if it is offline.
     try {
       const res = await api.correct(state.brand, state.model, state.year);
-      setState({ carLabel: res.label, carEditing: false });
+      setState({ carLabel: res.label });
     } catch {
-      setState({ carEditing: false });
+      setState({ carLabel: `${state.brand} ${state.model} ${state.year}` });
     }
-  },
-
-  acceptCar: () => {
-    track("vehicle_confirmed");
-    // Fire-and-forget: recording the car must not delay the funnel, and a
-    // failure only costs a referral bonus, never the customer's progress.
     api.confirmCar(state.brand, state.model, state.year).catch(() => {});
     nav("catalog");
   },
 };
-
-/** Runs when the screen becomes active. */
-export async function onEnter() {
-  if (!state.analyzing || !state.photoId) return;
-  try {
-    const res = await api.recognize(state.photoId);
-    setState({
-      brand: res.make,
-      model: res.model,
-      year: res.year,
-      carLabel: res.label,
-      analyzing: false,
-    });
-  } catch {
-    // Recognition failed — drop straight into manual correction rather than
-    // dead-ending the funnel.
-    setState({ analyzing: false, carEditing: true });
-  }
-}

@@ -2,7 +2,7 @@
 .page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:34px 16px}
 .phone{
   width:392px;height:844px;background:var(--bg);border-radius:var(--r-phone);
-  box-shadow:0 0 0 2px #232a34, 0 0 0 11px #0a0d12, 0 34px 80px rgba(0,0,0,.65);
+  box-shadow:0 0 0 2px #2a2c30, 0 0 0 11px #0a0b0c, 0 26px 60px rgba(0,0,0,.5);
   display:flex;flex-direction:column;overflow:hidden;position:relative;
 }
 @media (max-width:440px){
@@ -40,100 +40,113 @@ body.in-telegram .bar{
 .bars i{width:3px;background:var(--txt);border-radius:1px}
 .bars i:nth-child(1){height:4px}.bars i:nth-child(2){height:6px}
 .bars i:nth-child(3){height:8px}.bars i:nth-child(4){height:10px}
-.battery{width:22px;height:11px;border:1px solid rgba(255,255,255,.5);border-radius:3px;padding:1.5px;display:block}
+.battery{width:22px;height:11px;border:1px solid rgba(242,242,239,.5);border-radius:3px;padding:1.5px;display:block}
 .battery b{display:block;height:100%;width:72%;background:var(--txt);border-radius:1px}
 
-.tgheader{height:52px;flex:none;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid var(--line)}
+/* ── Header ────────────────────────────────────────────────── */
+.tgheader{height:52px;flex:none;display:flex;align-items:center;gap:10px;padding:0 14px}
 .hdr-title{font-family:var(--disp);font-weight:600;font-size:16px;line-height:1.1}
-.hdr-sub{font-size:10.5px;color:var(--muted2);letter-spacing:.2px}
+.hdr-sub{font-size:10.5px;color:var(--muted2);letter-spacing:.2px;margin-top:1px}
 .hdr-spacer{flex:1}
 .iconbtn{background:none;border:0;color:var(--txt);padding:6px;display:grid;place-items:center;cursor:pointer;border-radius:9px}
 button.iconbtn:hover{background:var(--card2)}
+.iconbtn.mut2{color:var(--muted)}
 /* Drawn window controls in the browser mockup are spans: no pointer, no hover,
    nothing that reads as clickable. */
 span.iconbtn{cursor:default}
 .cartwrap{position:relative}
-.cartbadge{position:absolute;top:0;right:0;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--blue);color:#fff;font-family:var(--disp);font-size:10px;font-weight:700;display:grid;place-items:center}
+.cartbadge{position:absolute;top:0;right:0;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--accent);color:var(--accentInk);font-family:var(--disp);font-size:10px;font-weight:700;display:grid;place-items:center}
 
-/* ── Step indicator ────────────────────────────────────────── */
-.steps{display:flex;align-items:center;gap:6px;padding:11px 20px;border-bottom:1px solid var(--line);flex:none}
-.step{display:flex;align-items:center;gap:6px;flex:1}
-.stepdot{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-family:var(--disp);font-size:11px;font-weight:700;background:var(--card2);color:var(--muted2);flex:none}
-.stepdot.on{background:var(--blue);color:#fff}
-.stepdot.done{background:var(--greenSoft);color:var(--green)}
-.steplbl{font-family:var(--disp);font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted2)}
-.steplbl.on{color:var(--txt)}
-.stepline{height:1px;background:var(--line);flex:1}
+/* Two-option language switch — a segmented pill, active side lime. */
+.langseg{display:inline-flex;background:var(--card2);border-radius:var(--r-pill);padding:3px;flex:none}
+.langseg button{border:0;background:none;color:var(--muted);font-family:var(--disp);
+  font-size:12.5px;font-weight:700;letter-spacing:.4px;padding:5px 11px;border-radius:16px;cursor:pointer;transition:color .12s}
+.langseg button:hover{color:var(--txt)}
+.langseg button.on{background:var(--accent);color:var(--accentInk)}
+
+/* ── Top progress bar (replaces the step-dot indicator) ────── */
+#steps:empty{display:none}
+.ptrack{height:2px;background:#1a1c1f;flex:none}
+.ptrack b{display:block;height:2px;background:var(--accent);transition:width .3s ease}
 
 /* ── Scroll area & bottom bar ──────────────────────────────── */
-.scr{flex:1;overflow-y:auto;padding:22px 20px 26px;animation:fadeUp .3s}
-.bar{flex:none;padding:12px 20px 18px;border-top:1px solid var(--line);background:var(--bg);display:flex;flex-direction:column;gap:9px}
+.scr{flex:1;overflow-y:auto;padding:20px 20px 24px;animation:fadeUp .3s}
+.bar{flex:none;padding:13px 20px 20px;border-top:1px solid var(--line);background:var(--bg2);display:flex;flex-direction:column;gap:9px}
 .bar:empty{display:none}
+/* A summary + button footer (Итого · Примерить) — total on the left. */
+.barsplit{display:flex;align-items:center;gap:14px}
+.barsplit .cta{flex:1;width:auto}
+.bartotal{min-width:0}
+.bartotal .micro{display:block}
+.bartotal .num{font-family:var(--disp);font-size:23px;font-weight:700;white-space:nowrap;line-height:1.1}
 
 /* ── Typography ────────────────────────────────────────────── */
-h1{font-family:var(--disp);font-size:32px;line-height:1.03;margin:0 0 10px;font-weight:700}
-h2{font-family:var(--disp);font-size:25px;line-height:1.08;margin:0 0 10px;font-weight:700}
-h3{font-family:var(--disp);font-size:17px;line-height:1.15;margin:0;font-weight:600}
-p{margin:0 0 12px;font-size:14px;line-height:1.45;color:var(--muted)}
+h1{font-family:var(--disp);font-size:34px;line-height:1.02;margin:0 0 8px;font-weight:700}
+h2{font-family:var(--disp);font-size:29px;line-height:1.04;margin:0 0 8px;font-weight:700}
+h3{font-family:var(--disp);font-size:18px;line-height:1.15;margin:0;font-weight:600}
+p{margin:0 0 14px;font-size:14px;line-height:1.45;color:var(--muted)}
 .mut{color:var(--muted)}.mut2{color:var(--muted2)}
-.micro{font-family:var(--disp);font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--muted2)}
+.micro{font-family:var(--disp);font-size:12px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted2)}
 .num{font-family:var(--disp);font-weight:700}
 .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;color:var(--muted2);letter-spacing:.2px}
 
-.eyebrow{display:inline-block;background:var(--blueSoft);color:var(--blue);font-family:var(--disp);font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;padding:5px 11px;border-radius:var(--r-pill);margin-bottom:12px}
+.eyebrow{display:inline-block;background:var(--accentSoft);color:var(--accentText);font-family:var(--disp);font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;padding:5px 11px;border-radius:var(--r-pill);margin-bottom:12px}
 
 /* ── Cards ─────────────────────────────────────────────────── */
-/* Three properties here exist because category cards are <button>, not <div>,
-   and a button is not a plain block box:
-     color    — a button does not inherit colour from body; without this the
-                headings fell back to the UA's near-black and vanished.
-     display  — an inline-block button lets a child's negative margin escape
-                upward and paint over the paragraph above the grid.
-     overflow — clips the bleeding placeholder to the rounded top corners,
-                which is what its -14px margin was always meant to do. */
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);
   padding:14px;color:var(--txt);overflow:hidden}
-
-/* min-width:0 lets a track shrink below its content's minimum, which matters
-   because the card's placeholder is deliberately wider than the card it sits
-   in (negative side margins, to bleed to the edges). */
 .grid2>*{min-width:0}
-.card[role=button]:hover{border-color:rgba(255,255,255,.18)}
-.card[role=button]:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
-
-/* Spacing for cards stacked in a column. Inside a grid the gap already does
-   this, and the sibling rule instead pushed every card after the first one
-   down by 10px — including the one merely *beside* it, which is why one card
-   in each row sat lower and shorter than its neighbour. */
+.card[role=button]:hover{border-color:rgba(242,242,239,.18)}
+.card[role=button]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .card+.card{margin-top:10px}
 .grid2>.card+.card{margin-top:0}
 
 .row{display:flex;align-items:center;gap:11px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
+/* ── Home zone grid ────────────────────────────────────────── */
+.zonegrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.zonecard{border-radius:var(--r-lg);overflow:hidden;position:relative;height:112px;
+  background:#1a1c1f center/cover no-repeat;border:0;padding:0;cursor:pointer;text-align:left;
+  color:var(--txt)}
+.zonecard.wide{grid-column:1 / -1}
+.zonecard::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(16,17,19,.9) 0%,rgba(16,17,19,.05) 62%)}
+.zonecard span{position:absolute;left:12px;bottom:10px;z-index:1;
+  font-family:var(--disp);font-size:19px;font-weight:600;line-height:1.1}
+.zonecard:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Home bottom shortcuts (Наши работы · Мои примерки). */
+.softrow{display:flex;gap:8px}
+.softbtn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  background:var(--card2);color:var(--muted);border:0;border-radius:var(--r-md);padding:12px;
+  font-size:13px;font-weight:500;cursor:pointer;transition:background .12s,color .12s}
+.softbtn svg{color:var(--muted);flex:none;transition:color .12s}
+.softbtn:hover{background:#2a2e34;color:var(--txt)}
+.softbtn:hover svg{color:var(--txt)}
+
 /* Gallery ("Мои примерки") — a grid of a user's saved renders. */
 .galgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
 .galcard{display:flex;flex-direction:column;text-align:left;padding:0;overflow:hidden;
   background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);
   color:var(--txt);cursor:pointer;min-width:0}
-.galcard:hover{border-color:rgba(255,255,255,.18)}
-.galcard:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
-.galthumb{aspect-ratio:4/3;background:#131922 center/cover no-repeat}
+.galcard:hover{border-color:rgba(242,242,239,.18)}
+.galcard:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.galthumb{aspect-ratio:4/3;background:#22252a center/cover no-repeat}
 .galmeta{padding:9px 11px 11px}
 .galname{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .galsub{font-size:11.5px;color:var(--muted2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* Full-screen before/after. Sits inside the phone frame, not the viewport, so
    the mini-app keeps its own bounds on desktop. */
-.zoom{position:absolute;inset:0;z-index:40;background:rgba(8,11,15,.96);
+.zoom{position:absolute;inset:0;z-index:40;background:rgba(8,9,10,.96);
   display:grid;place-items:center;padding:18px;animation:fade .18s ease}
 .zoom-inner{width:100%}
 .zoom-close{position:absolute;top:12px;right:12px;z-index:41;background:var(--card2)}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 
-/* Bottom sheets (balance, exhausted, bonus confirmation). Anchored to .phone
-   like the zoom overlay, so they cover the frame and not the scroll box. */
-.sheet-back{position:absolute;inset:0;z-index:44;background:rgba(8,11,15,.6);animation:fade .18s ease}
+/* Bottom sheets. Anchored to .phone like the zoom overlay. */
+.sheet-back{position:absolute;inset:0;z-index:44;background:rgba(8,9,10,.6);animation:fade .18s ease}
 .sheet{position:absolute;left:0;right:0;bottom:0;z-index:45;background:var(--bg);
   border-radius:var(--r-lg) var(--r-lg) 0 0;border-top:1px solid var(--line);
   padding:10px 20px calc(20px + var(--tg-safe-area-inset-bottom,env(safe-area-inset-bottom,0px)));
@@ -141,132 +154,146 @@ p{margin:0 0 12px;font-size:14px;line-height:1.45;color:var(--muted)}
 .sheet-grip{width:38px;height:4px;border-radius:2px;background:var(--line);margin:2px auto 12px}
 @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 
-.quota-chip{display:flex;align-items:center;gap:10px;margin-top:12px}
-
 /* Cart row thumbnail: the customer's own render, not a grey square. */
-.thumb{width:56px;height:56px;flex:none;border-radius:10px;overflow:hidden;
+.thumb{width:64px;height:64px;flex:none;border-radius:11px;overflow:hidden;
   background-size:cover;background-position:center;display:grid;place-items:center}
 
 .note{display:flex;gap:9px;background:var(--bg2);border-radius:var(--r-md);padding:11px 12px;font-size:12.5px;line-height:1.4;color:var(--muted);margin-top:12px}
-.note::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--blue);margin-top:6px;flex:none}
-.note.blue{background:var(--blueSoft);color:#bcd4ff}
+.note::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--accent);margin-top:6px;flex:none}
+.note.accent{background:var(--accentSoft);color:#c6d3a8}
+.note.accent::before{background:var(--accent)}
+/* Legacy alias — a few screens still say .note.blue. */
+.note.blue{background:var(--accentSoft);color:#c6d3a8}
 
-/* ── Placeholders (no image assets in the prototype) ───────── */
-.ph{background:repeating-linear-gradient(135deg,#171d26 0 11px,#131922 11px 22px);display:grid;place-items:center;border-radius:var(--r-md)}
-.ph.after{background:radial-gradient(120% 90% at 50% 35%,#1b2431,#111721)}
-.ph.sm{background:repeating-linear-gradient(135deg,#171d26 0 7px,#131922 7px 14px)}
+/* ── Placeholders (fallback when a catalog item has no photo) ─ */
+.ph{background:repeating-linear-gradient(135deg,#1e2126 0 11px,#191c20 11px 22px);display:grid;place-items:center;border-radius:var(--r-md)}
+.ph.after{background:radial-gradient(120% 90% at 50% 35%,#242a20,#191c20)}
+.ph.sm{background:repeating-linear-gradient(135deg,#1e2126 0 7px,#191c20 7px 14px)}
 
 /* ── Buttons ───────────────────────────────────────────────── */
-.cta{display:block;width:100%;border:0;border-radius:15px;background:var(--blue);color:#fff;
-  font-family:var(--disp);font-size:17px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;
-  padding:14px;cursor:pointer;transition:background .15s}
-.cta:hover{background:#4f90ff}
-.cta[disabled]{background:#2a323d;color:var(--muted2);cursor:not-allowed}
-.cta.sec{background:transparent;border:1px solid var(--line);color:var(--txt)}
+.cta{display:block;width:100%;border:0;border-radius:13px;background:var(--accent);color:var(--accentInk);
+  font-family:var(--disp);font-size:17px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+  padding:16px;cursor:pointer;transition:background .15s}
+.cta:hover{background:var(--accentHover)}
+.cta[disabled]{background:#2a2e34;color:var(--muted2);cursor:not-allowed}
+.cta.sec{background:transparent;border:1px solid rgba(242,242,239,.14);color:var(--txt)}
 .cta.sec:hover{background:var(--card2)}
-.cta.dashed{background:transparent;border:1px dashed rgba(255,255,255,.18);color:var(--muted)}
-.btn{border:1px solid var(--line);background:transparent;color:var(--txt);border-radius:var(--r-md);
-  font-family:var(--disp);font-size:13px;letter-spacing:.5px;text-transform:uppercase;padding:10px 12px;cursor:pointer}
-.btn:hover{background:var(--card2)}
-.btn.on{background:var(--blueSoft);border-color:rgba(59,130,246,.5);color:#9cc2ff}
-
-/* ── Home quick-actions bar (above the hero) ───────────────── */
-.htop{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:16px}
-.htop-l{display:flex;gap:8px;min-width:0}
-.hchip{display:inline-flex;align-items:center;gap:7px;background:var(--card2);border:0;
-  color:var(--muted);border-radius:var(--r-pill);padding:8px 13px;font-size:13px;
-  font-weight:500;line-height:1;cursor:pointer;white-space:nowrap;transition:background .12s,color .12s}
-.hchip svg{color:var(--muted2);flex:none;transition:color .12s}
-.hchip:hover{background:#232c38;color:var(--txt)}
-.hchip:hover svg{color:var(--txt)}
-/* Two-option language switch — a segmented pill, active side filled. */
-.langseg{display:inline-flex;background:var(--card2);border-radius:var(--r-pill);padding:3px;flex:none}
-.langseg button{border:0;background:none;color:var(--muted2);font-family:var(--disp);
-  font-size:12.5px;font-weight:700;letter-spacing:.4px;padding:5px 11px;border-radius:16px;cursor:pointer;transition:color .12s}
-.langseg button:hover{color:var(--txt)}
-.langseg button.on{background:var(--blue);color:#fff}
+.cta.dashed{background:transparent;border:1px dashed rgba(242,242,239,.18);color:var(--muted)}
+.btn{border:1px solid var(--line);background:var(--card2);color:var(--txt);border-radius:var(--r-md);
+  font-family:var(--disp);font-size:13px;letter-spacing:.5px;text-transform:uppercase;padding:11px 12px;cursor:pointer}
+.btn:hover{background:#2a2e34}
+.btn.on{background:var(--accentSoft);border-color:var(--accentBorder);color:var(--accentText)}
 
 /* ── Result secondary actions — soft, not the heavy uppercase .btn ── */
 .racts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
 .ract{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--card2);
   border:0;color:var(--muted);border-radius:var(--r-md);padding:11px 10px;font-size:13px;
   font-weight:500;cursor:pointer;transition:background .12s,color .12s}
-.ract svg{color:var(--muted2);flex:none;transition:color .12s}
-.ract:hover{background:#232c38;color:var(--txt)}
+.ract svg{color:var(--muted);flex:none;transition:color .12s}
+.ract:hover{background:#2a2e34;color:var(--txt)}
 .ract:hover svg{color:var(--txt)}
-.ract.done,.ract.done svg{color:var(--green)}
+.ract.done,.ract.done svg{color:var(--accent)}
 .ract[disabled]{opacity:.55;cursor:default}
-/* A lone last action (odd count) spans the full width instead of sitting half-empty. */
 .racts .ract:last-child:nth-child(odd){grid-column:1 / -1}
 
-/* ── Payment-method selector (booking form) ────────────────── */
+/* ── Payment-method selector (kept in CSS; no longer rendered) ─ */
 .payopts{display:flex;flex-direction:column;gap:8px}
 .payopt{display:flex;align-items:center;gap:11px;background:var(--card2);border:1px solid transparent;
   color:var(--muted);border-radius:var(--r-md);padding:12px 13px;font-size:14px;cursor:pointer;
   text-align:left;transition:background .12s,color .12s,border-color .12s}
-.payopt svg{color:var(--muted2);flex:none;transition:color .12s}
+.payopt svg{color:var(--muted);flex:none;transition:color .12s}
 .payopt:hover{color:var(--txt)}
-.payopt.on{background:var(--blueSoft);border-color:rgba(59,130,246,.5);color:#cfe0ff}
-.payopt.on svg{color:var(--blue)}
+.payopt.on{background:var(--accentSoft);border-color:var(--accentBorder);color:var(--accentText)}
+.payopt.on svg{color:var(--accent)}
 
 /* ── Chips & options ───────────────────────────────────────── */
 .chips{display:flex;flex-wrap:wrap;gap:7px}
-.chip{border:1px solid var(--line);background:var(--bg2);color:var(--muted);border-radius:var(--r-pill);
+.chip{border:1px solid var(--line);background:var(--card2);color:var(--muted);border-radius:var(--r-pill);
   font-family:var(--disp);font-size:13px;letter-spacing:.3px;padding:8px 13px;cursor:pointer}
-.chip.on{background:var(--blueSoft);border-color:rgba(59,130,246,.55);color:#9cc2ff}
-.tag{display:inline-block;background:var(--bg2);color:var(--muted2);border-radius:var(--r-tag);font-size:11px;padding:3px 7px}
-.filters{display:flex;gap:7px;overflow-x:auto;white-space:nowrap;margin:0 -20px 14px;padding:0 20px 2px}
+.chip.on{background:var(--accentSoft);border-color:var(--accentBorder);color:var(--accentText)}
+.tag{display:inline-block;background:var(--card2);color:var(--muted2);border-radius:var(--r-tag);font-size:11px;padding:3px 7px}
+.filters{display:flex;gap:8px;overflow-x:auto;white-space:nowrap;margin:0 -20px 14px;padding:0 20px 2px}
+
+/* Segmented option (диагональ 9"/10"/13") — equal-width big buttons. */
+.segrow{display:flex;gap:8px}
+.seg{flex:1;text-align:center;border:1px solid var(--line);background:var(--card2);color:var(--muted);
+  border-radius:12px;font-family:var(--disp);font-size:16px;font-weight:600;padding:13px 0;cursor:pointer}
+.seg.on{border-color:var(--accentBorder);background:var(--accentSoft);color:var(--accentText)}
 
 .swatches{display:flex;flex-wrap:wrap;gap:9px}
 .sw{width:38px;height:38px;border-radius:11px;border:2px solid transparent;cursor:pointer;padding:0}
 .sw.round{width:32px;height:32px;border-radius:50%}
-.sw.on{border-color:#fff}
+.sw.on{border-color:var(--accent)}
 
-.optrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0}
+.optrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0}
 .optrow+.optrow{border-top:1px solid var(--line)}
 .sw-track{width:46px;height:27px;border-radius:14px;background:var(--card2);position:relative;border:0;cursor:pointer;flex:none}
-.sw-track.on{background:var(--blue)}
-.sw-track b{position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:left .18s}
-.sw-track.on b{left:22px}
+.sw-track.on{background:var(--accent)}
+.sw-track b{position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:var(--muted);transition:left .18s}
+.sw-track.on b{left:22px;background:var(--accentInk)}
+
+/* ── Car fields (manual make / model / year selection) ─────── */
+.carfields{display:flex;flex-wrap:wrap;gap:8px}
+.carfield{flex:1;min-width:calc(50% - 4px);display:flex;flex-direction:column;align-items:flex-start;
+  background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 13px;cursor:pointer;
+  color:var(--txt);text-align:left;transition:border-color .12s}
+.carfield.wide{flex-basis:100%;min-width:100%}
+.carfield:hover{border-color:rgba(242,242,239,.2)}
+.carfield.on{border-color:var(--accentBorder)}
+.cf-lbl{font-size:10.5px;color:var(--muted2);margin-bottom:2px}
+.cf-val{font-family:var(--disp);font-size:16px;font-weight:600;line-height:1.1}
+
+/* "Установка входит в цену" — a lime-tick reassurance line. */
+.included{display:flex;align-items:center;gap:9px;padding:13px 0 0;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px}
+.included svg{color:var(--accent);flex:none}
 
 /* ── Price block ───────────────────────────────────────────── */
-.price .pl{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:5px 0;color:var(--muted)}
-.price .pl span:last-child{font-family:var(--disp);color:var(--txt)}
+.price .pl{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;padding:6px 0;color:var(--muted)}
+.price .pl span:last-child{font-family:var(--disp);color:var(--txt);font-weight:600}
+.price .pl .incl{color:var(--accent)}
 .price .total{border-top:1px solid var(--line);margin-top:7px;padding-top:10px;display:flex;justify-content:space-between;align-items:baseline}
 .price .total .num{font-size:25px}
 
 .pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--disp);font-size:11.5px;letter-spacing:.5px;text-transform:uppercase;border-radius:var(--r-pill);padding:4px 10px}
 .pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
-.pill.in{background:var(--greenSoft);color:var(--green)}
-.pill.order{background:rgba(245,158,11,.13);color:var(--amber)}
+.pill.in{background:var(--accentSoft);color:var(--accent)}
+.pill.order{background:rgba(242,181,68,.14);color:var(--amber)}
 
 /* ── Before/after comparison slider ────────────────────────── */
 .ba{position:relative;border-radius:var(--r-lg);overflow:hidden;user-select:none}
 .ba .layer{position:absolute;inset:0;background-size:cover;background-position:center}
 .ba .layer.after{clip-path:inset(0 0 0 0)}
-.ba .divider{position:absolute;top:0;bottom:0;width:2px;background:#fff;pointer-events:none;transform:translateX(-1px)}
-.ba .handle{position:absolute;top:50%;width:34px;height:34px;border-radius:50%;background:#fff;color:#0c0f14;
+.ba .divider{position:absolute;top:0;bottom:0;width:2px;background:var(--accent);pointer-events:none;transform:translateX(-1px)}
+.ba .handle{position:absolute;top:50%;width:36px;height:36px;border-radius:50%;background:var(--accent);color:var(--accentInk);
   display:grid;place-items:center;font-family:var(--disp);font-weight:700;font-size:13px;
   transform:translate(-50%,-50%);pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.45)}
 .ba .bacut{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0}
 .ba .balbl{position:absolute;bottom:9px;font-family:var(--disp);font-size:11px;letter-spacing:.8px;
-  text-transform:uppercase;background:rgba(0,0,0,.55);padding:4px 9px;border-radius:var(--r-tag)}
+  text-transform:uppercase;background:rgba(16,17,19,.6);padding:4px 9px;border-radius:var(--r-tag)}
 
 /* ── Forms ─────────────────────────────────────────────────── */
 .field{margin-bottom:13px}
-.field label{display:block;margin-bottom:6px}
-.field input,.field textarea{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:var(--r-md);
-  color:var(--txt);font-size:14px;padding:12px;outline:none}
-.field input:focus,.field textarea:focus{border-color:var(--blue)}
+.field label{display:block;margin-bottom:8px}
+.field input,.field textarea{width:100%;background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);
+  color:var(--txt);font-size:14px;padding:14px 12px;outline:none}
+.field input:focus,.field textarea:focus{border-color:var(--accent)}
 .field textarea{resize:vertical;min-height:74px}
+/* The single phone field on the request screen — larger, accented. */
+.field.hero input{font-family:var(--disp);font-size:22px;font-weight:600;letter-spacing:.9px;border-color:var(--accentBorder)}
+
+/* A collapsible "add date & comment" disclosure. */
+.disclosure{margin-top:16px;color:var(--muted);font-size:13.5px;display:flex;align-items:center;gap:8px;cursor:pointer;background:none;border:0;padding:0}
+.disclosure svg{transition:transform .18s}
+.disclosure.open svg{transform:rotate(90deg)}
 
 /* ── Spinner / progress ────────────────────────────────────── */
-.spinner{width:40px;height:40px;border-radius:50%;border:3px solid var(--card2);border-top-color:var(--blue);animation:spin .9s linear infinite}
-.progress{height:5px;border-radius:3px;background:var(--card2);overflow:hidden}
-.progress b{display:block;height:100%;background:var(--blue);transition:width .2s}
+.spinner{width:44px;height:44px;border-radius:50%;border:3px solid var(--card2);border-top-color:var(--accent);animation:spin .9s linear infinite}
+.progress{height:4px;border-radius:2px;background:#1a1c1f;overflow:hidden}
+.progress b{display:block;height:100%;background:var(--accent);transition:width .2s}
 .checklist{list-style:none;margin:14px 0 0;padding:0}
-.checklist li{display:flex;align-items:center;gap:9px;padding:6px 0;font-size:13px;color:var(--muted2)}
+.checklist li{display:flex;align-items:center;gap:11px;padding:9px 0;font-size:14px;color:var(--muted2)}
 .checklist li.on{color:var(--txt)}
-.checklist li.done{color:var(--green)}
-.ck{width:17px;height:17px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-size:10px;flex:none}
-.checklist li.done .ck{border-color:var(--green)}
+.checklist li.done{color:var(--accent)}
+.ck{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:10px;flex:none}
+.checklist li.on .ck{border-color:rgba(242,242,239,.25)}
+.checklist li.done .ck{border-color:var(--accent)}
